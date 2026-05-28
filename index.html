@@ -266,14 +266,87 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .kit-reset-btn:hover{border-color:var(--coral);color:var(--coral);}
 .section-divider{height:1px;background:var(--border);margin:2rem 0;}
 
-@media(max-width:600px){
+@media(max-width:640px){
+  /* Header */
   .header{padding:1.25rem 1rem 1rem;}
-  .main{padding:1rem 1rem 3rem;}
-  .day-nav{padding:0.9rem 1rem;}
+  .brand{font-size:1.7rem;}
+  .tagline{font-size:11px;}
+
+  /* Controls — stack vertically, full width */
+  .controls-row{flex-direction:column;align-items:stretch;gap:8px;margin-top:1rem;}
+  .ctrl-box{flex-direction:column;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:14px;}
+  .ctrl-label{font-size:10px;}
+
+  /* Weight input row stays horizontal */
+  .ctrl-box:first-child{flex-direction:row;align-items:center;flex-wrap:wrap;}
+  .weight-input{font-size:18px;width:64px;}
+
+  /* Condition buttons — 2x2 grid */
+  .cond-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;width:100%;}
+  .cond-btn{text-align:center;padding:8px 6px;font-size:12px;border-radius:10px;}
+
+  /* Duration buttons — 2x2 grid */
+  .dur-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;width:100%;}
+  .dur-btn{text-align:center;padding:8px 6px;font-size:12px;border-radius:10px;}
+
+  /* Condition banner */
+  .cond-banner{padding:10px 1rem;font-size:12px;}
+
+  /* Stats bar — 2 per row */
   .stats-bar{flex-wrap:wrap;}
-  .stat-item{min-width:50%;}
-  .dur-bar{padding:8px 1rem;flex-wrap:wrap;gap:6px;}
-  .cond-banner{padding:8px 1rem;}
+  .stat-item{min-width:50%;flex:0 0 50%;padding:0.75rem 1rem;}
+  .stat-val{font-size:1.1rem;}
+  .stat-unit{font-size:10px;}
+
+  /* Duration info bar */
+  .dur-bar{padding:8px 1rem;flex-wrap:wrap;gap:6px;font-size:12px;}
+  .dur-pill{font-size:11px;}
+  .dur-text{font-size:12px;line-height:1.5;}
+
+  /* Day nav — larger tap targets */
+  .day-nav{padding:0.75rem 1rem;gap:6px;}
+  .day-btn{padding:9px 12px;font-size:12px;border-radius:12px;}
+
+  /* Main content */
+  .main{padding:1rem 1rem 4rem;}
+  .day-title{font-size:1.2rem;}
+  .day-subtitle{font-size:11px;}
+  .day-note{font-size:12px;padding:6px 10px;}
+
+  /* Table — more readable on small screens */
+  .table-wrap{border-radius:14px;}
+  table{min-width:0;width:100%;}
+  th{font-size:9px;padding:8px 10px;}
+  td{padding:10px 10px;font-size:13px;}
+  .time-cell{font-size:11px;min-width:62px;}
+  .badge{font-size:9px;padding:2px 6px;}
+
+  /* Hydration cards — 1 per row on very small, 2 on medium */
+  .hydration-row{grid-template-columns:1fr 1fr;}
+  .hval{font-size:0.95rem;}
+  .hkey{font-size:9px;}
+
+  /* Carb target */
+  .carb-target{font-size:12px;padding:8px 12px;}
+  .carb-target strong{font-size:14px;}
+
+  /* Kit checklist */
+  .kit-section-head{padding:10px 12px;}
+  .kit-section-title{font-size:12px;}
+  .kit-item{padding:10px 12px;gap:10px;}
+  .kit-item-name{font-size:13px;}
+  .kit-item-detail{font-size:11px;}
+  .kit-item-qty{font-size:10px;padding:2px 7px;}
+  .kit-checkbox{width:20px;height:20px;}
+  .kit-progress-label{font-size:11px;}
+  .cond-kit-note{font-size:12px;padding:10px 12px;}
+  .kit-intro{font-size:13px;}
+  .kit-reset-btn{font-size:12px;padding:9px 16px;width:100%;text-align:center;}
+
+  /* Condition notes */
+  .cond-note{font-size:12px;padding:6px 10px;}
+  .cond-inline{font-size:12px;}
+  .dur-inline{font-size:12px;}
 }
 </style>
 </head>
