@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>XC Race Prep — Nutrition Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Nunito+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#1a1a1a;
+  --bg2:#222222;
+  --bg3:#2a2a2a;
+  --surface:#2e2e2e;
+  --surface2:#363636;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.13);
+  --orange:#ff7a2f;
+  --orange2:#e86820;
+  --orange3:#ff9a5c;
+  --orange-dim:rgba(255,122,47,0.1);
+  --orange-mid:rgba(255,122,47,0.2);
+  --text:#f0ede8;
+  --text2:#a8a29c;
+  --text3:#6b6560;
+  --teal:#3ecfb0;
+  --blue:#5ab4f0;
+  --coral:#ff5252;
+  --gold:#f0c040;
+  --r:12px;
+  --r2:16px;
+  --r3:20px;
+}
+body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;}
+
+/* ── HEADER ── */
+.header{
+  padding:2rem 2rem 1.5rem;
+  border-bottom:1px solid var(--border);
+  text-align:center;
+  position:relative;
+}
+.brand{
+  font-family:'Nunito',sans-serif;
+  font-weight:900;
+  font-size:clamp(1.8rem,5vw,2.8rem);
+  color:var(--orange);
+  letter-spacing:-0.01em;
+  line-height:1;
+}
+.brand-dot{color:var(--text3);}
+.tagline{
+  font-family:'Nunito',sans-serif;
+  font-size:13px;
+  color:var(--text3);
+  font-weight:600;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  margin-top:5px;
+}
+
+/* Controls row */
+.controls-row{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top:1.25rem;
+}
+
+/* Weight box */
+.ctrl-box{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--r2);
+  padding:9px 14px;
+}
+.ctrl-label{
+  font-family:'Nunito',sans-serif;
+  font-size:11px;
+  font-weight:700;
+  color:var(--text3);
+  text-transform:uppercase;
+  letter-spacing:0.07em;
+  white-space:nowrap;
+}
+.weight-input{
+  width:58px;background:var(--bg3);
+  border:1px solid var(--border2);border-radius:10px;
+  color:var(--orange);font-family:'Nunito',sans-serif;
+  font-size:16px;font-weight:800;padding:5px 8px;text-align:center;outline:none;
+}
+.weight-input:focus{border-color:var(--orange);}
+.unit-toggle{display:flex;gap:4px;}
+.unit-btn{
+  background:transparent;border:1px solid var(--border);border-radius:8px;
+  color:var(--text3);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;
+  padding:4px 9px;cursor:pointer;transition:all 0.15s;
+}
+.unit-btn.active{background:var(--orange-dim);border-color:var(--orange);color:var(--orange);}
+
+/* Conditions */
+.cond-btns{display:flex;gap:5px;flex-wrap:wrap;}
+.cond-btn{
+  background:transparent;border:1px solid var(--border2);border-radius:10px;
+  color:var(--text3);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;
+  padding:5px 11px;cursor:pointer;transition:all 0.15s;white-space:nowrap;
+}
+.cond-btn:hover{border-color:var(--border2);color:var(--text2);}
+.cond-btn.active-cool  {background:rgba(79,195,247,0.12);border-color:#4fc3f7;color:#4fc3f7;}
+.cond-btn.active-normal{background:var(--orange-dim);border-color:var(--orange);color:var(--orange);}
+.cond-btn.active-hot   {background:rgba(255,82,82,0.12);border-color:#ff5252;color:#ff5252;}
+.cond-btn.active-rain  {background:rgba(90,180,240,0.12);border-color:#5ab4f0;color:#5ab4f0;}
+
+/* Duration selector */
+.dur-btns{display:flex;gap:5px;flex-wrap:wrap;}
+.dur-btn{
+  background:transparent;border:1px solid var(--border2);border-radius:10px;
+  color:var(--text3);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;
+  padding:5px 11px;cursor:pointer;transition:all 0.15s;white-space:nowrap;
+}
+.dur-btn.active{background:rgba(62,207,176,0.12);border-color:var(--teal);color:var(--teal);}
+.dur-btn:hover:not(.active){color:var(--text2);border-color:var(--border2);}
+
+/* Condition banner */
+.cond-banner{padding:10px 2rem;font-size:13px;font-family:'Nunito Sans',sans-serif;display:none;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+.cond-banner.visible{display:flex;}
+.cond-banner.hot-banner {background:rgba(255,82,82,0.07);color:#ff8080;border-bottom-color:rgba(255,82,82,0.18);}
+.cond-banner.cool-banner{background:rgba(79,195,247,0.07);color:#4fc3f7;border-bottom-color:rgba(79,195,247,0.18);}
+.cond-banner.rain-banner{background:rgba(90,180,240,0.07);color:#7ab8f0;border-bottom-color:rgba(90,180,240,0.18);}
+.cond-icon{font-size:18px;flex-shrink:0;}
+
+/* Stats bar */
+.stats-bar{display:flex;gap:0;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+.stats-bar::-webkit-scrollbar{display:none;}
+.stat-item{flex:1;min-width:120px;padding:0.9rem 1.25rem;border-right:1px solid var(--border);}
+.stat-item:last-child{border-right:none;}
+.stat-key{font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px;}
+.stat-val{font-family:'Nunito',sans-serif;font-size:1.25rem;font-weight:900;color:var(--orange);line-height:1;}
+.stat-val.hot-val{color:#ff5252;} .stat-val.teal-val{color:var(--teal);}
+.stat-unit{font-size:11px;font-weight:600;color:var(--text3);margin-top:2px;font-family:'Nunito Sans',sans-serif;}
+
+/* Duration info bar */
+.dur-bar{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 2rem;border-bottom:1px solid var(--border);
+  background:rgba(62,207,176,0.04);font-size:13px;
+}
+.dur-pill{
+  display:inline-block;background:rgba(62,207,176,0.12);
+  border:1px solid rgba(62,207,176,0.25);color:var(--teal);
+  border-radius:20px;font-family:'Nunito',sans-serif;font-weight:700;
+  font-size:11px;padding:3px 10px;white-space:nowrap;
+}
+.dur-text{color:var(--text2);font-family:'Nunito Sans',sans-serif;}
+.dur-text em{color:var(--teal);font-style:normal;font-weight:600;}
+
+/* Day nav */
+.day-nav{display:flex;gap:6px;padding:1rem 2rem;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
+.day-nav::-webkit-scrollbar{display:none;}
+.day-btn{
+  flex-shrink:0;background:transparent;border:1px solid var(--border2);
+  border-radius:12px;color:var(--text2);
+  font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;
+  padding:7px 14px;cursor:pointer;transition:all 0.15s;white-space:nowrap;
+}
+.day-btn:hover{border-color:var(--border2);color:var(--text);}
+.day-btn.active{background:var(--orange);border-color:var(--orange);color:#fff;}
+.day-btn.race{border-color:var(--coral);color:var(--coral);}
+.day-btn.race.active{background:var(--coral);color:#fff;border-color:var(--coral);}
+.day-btn.kit-day{border-color:var(--gold);color:var(--gold);}
+.day-btn.kit-day.active{background:var(--gold);color:#1a0e00;border-color:var(--gold);}
+
+/* Main */
+.main{padding:1.5rem 2rem 4rem;}
+.day-title{font-family:'Nunito',sans-serif;font-size:1.5rem;font-weight:900;color:var(--text);margin-bottom:3px;}
+.day-subtitle{font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;}
+.day-note{
+  display:inline-block;margin-top:8px;
+  background:var(--orange-dim);border:1px solid rgba(255,122,47,0.22);
+  border-radius:10px;padding:6px 13px;font-size:12px;font-weight:600;
+  color:var(--orange3);font-family:'Nunito Sans',sans-serif;
+}
+
+/* Condition note */
+.cond-note-row{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;}
+.cond-note{display:inline-flex;align-items:center;gap:6px;border-radius:10px;padding:6px 12px;font-size:12px;font-weight:600;font-family:'Nunito Sans',sans-serif;}
+.cond-note.hot {background:rgba(255,82,82,0.1);border:1px solid rgba(255,82,82,0.22);color:#ff8080;}
+.cond-note.cool{background:rgba(79,195,247,0.1);border:1px solid rgba(79,195,247,0.22);color:#4fc3f7;}
+.cond-note.rain{background:rgba(90,180,240,0.1);border:1px solid rgba(90,180,240,0.22);color:#7ab8f0;}
+
+/* Table */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r3);background:var(--bg2);margin-top:1rem;}
+table{width:100%;border-collapse:collapse;min-width:500px;}
+thead tr{background:var(--surface);border-bottom:1px solid var(--border2);}
+th{font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;padding:10px 15px;text-align:left;}
+td{padding:12px 15px;border-bottom:1px solid var(--border);vertical-align:top;font-size:13px;color:var(--text2);line-height:1.55;font-family:'Nunito Sans',sans-serif;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,0.02);}
+.time-cell{font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;color:var(--text3);white-space:nowrap;min-width:72px;}
+.type-cell{min-width:82px;}
+.badge{display:inline-block;border-radius:8px;font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:0.03em;text-transform:uppercase;padding:3px 8px;font-weight:800;}
+.b-meal  {background:rgba(62,207,176,0.12);color:#3ecfb0;}
+.b-snack {background:rgba(240,192,64,0.12);color:#f0c040;}
+.b-water {background:rgba(90,180,240,0.12);color:#5ab4f0;}
+.b-pre   {background:rgba(255,122,47,0.12);color:#ff7a2f;}
+.b-during{background:rgba(255,82,82,0.12); color:#ff7070;}
+.b-post  {background:rgba(160,150,240,0.12);color:#a098f0;}
+.food-text{color:var(--text);font-family:'Nunito Sans',sans-serif;}
+.food-text em{color:var(--orange3);font-style:normal;font-weight:600;}
+.food-text small{color:var(--text3);font-size:11px;display:block;margin-top:2px;}
+.cond-inline{color:#ff8a6a;font-size:12px;display:block;margin-top:4px;padding:4px 10px;background:rgba(255,82,82,0.07);border-radius:8px;border-left:2px solid rgba(255,82,82,0.35);}
+.cond-inline.rain-inline{color:#7ab8f0;background:rgba(90,180,240,0.07);border-left-color:rgba(90,180,240,0.35);}
+.cond-inline.cool-inline{color:#4fc3f7;background:rgba(79,195,247,0.07);border-left-color:rgba(79,195,247,0.35);}
+.dur-inline{color:var(--teal);font-size:12px;display:block;margin-top:4px;padding:4px 10px;background:rgba(62,207,176,0.07);border-radius:8px;border-left:2px solid rgba(62,207,176,0.35);}
+
+/* Hydration cards */
+.hydration-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:1rem;}
+.hydration-card{background:rgba(90,180,240,0.06);border:1px solid rgba(90,180,240,0.18);border-radius:var(--r2);padding:11px 14px;}
+.hydration-card.hot-card {background:rgba(255,82,82,0.06);border-color:rgba(255,82,82,0.22);}
+.hydration-card.rain-card{background:rgba(90,180,240,0.08);border-color:rgba(90,180,240,0.22);}
+.hkey{font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;color:#5ab4f0;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;}
+.hydration-card.hot-card  .hkey{color:#ff7070;}
+.hydration-card.rain-card .hkey{color:#7ab8f0;}
+.hval{font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:900;color:#5ab4f0;}
+.hydration-card.hot-card  .hval{color:#ff7070;}
+.hydration-card.rain-card .hval{color:#7ab8f0;}
+.carb-target{display:flex;align-items:center;gap:10px;margin-top:1rem;padding:10px 14px;background:var(--orange-dim);border:1px solid rgba(255,122,47,0.2);border-radius:var(--r2);font-size:13px;font-weight:600;color:var(--orange3);font-family:'Nunito Sans',sans-serif;}
+.carb-target strong{font-family:'Nunito',sans-serif;color:var(--orange);font-size:15px;font-weight:900;}
+
+/* ── GEAR CHECKLIST ── */
+.kit-intro{margin-top:6px;font-size:13px;color:var(--text2);line-height:1.6;max-width:600px;font-family:'Nunito Sans',sans-serif;}
+.kit-progress-bar{height:4px;background:var(--surface2);border-radius:4px;margin-top:1rem;overflow:hidden;}
+.kit-progress-fill{height:100%;background:var(--orange);border-radius:4px;transition:width 0.3s ease;}
+.kit-progress-label{font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;color:var(--text3);margin-top:5px;}
+.kit-sections{display:flex;flex-direction:column;gap:1rem;margin-top:1.25rem;}
+.kit-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;}
+.kit-section-head{padding:11px 16px;background:var(--surface);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.kit-section-title{font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;color:var(--text);display:flex;align-items:center;gap:8px;}
+.kit-section-count{font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:var(--text3);}
+.kit-item{display:flex;align-items:flex-start;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.12s;}
+.kit-item:last-child{border-bottom:none;}
+.kit-item:hover{background:rgba(255,255,255,0.02);}
+.kit-item.checked{opacity:0.45;}
+.kit-checkbox{flex-shrink:0;width:19px;height:19px;margin-top:1px;border:1px solid var(--border2);border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;background:var(--bg3);}
+.kit-item.checked .kit-checkbox{background:var(--orange);border-color:var(--orange);}
+.kit-checkmark{display:none;color:#fff;font-size:11px;font-weight:900;font-family:'Nunito',sans-serif;}
+.kit-item.checked .kit-checkmark{display:block;}
+.kit-item-text{flex:1;}
+.kit-item-name{font-size:13px;font-weight:700;color:var(--text);font-family:'Nunito',sans-serif;}
+.kit-item.checked .kit-item-name{text-decoration:line-through;color:var(--text3);}
+.kit-item-detail{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.4;font-family:'Nunito Sans',sans-serif;}
+.kit-item-qty{font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;color:var(--orange);background:var(--orange-dim);border-radius:8px;padding:3px 8px;white-space:nowrap;flex-shrink:0;margin-top:2px;border:1px solid rgba(255,122,47,0.18);}
+.kit-item-qty.hot-qty {color:#ff7070;background:rgba(255,82,82,0.1);border-color:rgba(255,82,82,0.2);}
+.kit-item-qty.rain-qty{color:#7ab8f0;background:rgba(90,180,240,0.1);border-color:rgba(90,180,240,0.2);}
+.kit-item-qty.cool-qty{color:#4fc3f7;background:rgba(79,195,247,0.1);border-color:rgba(79,195,247,0.2);}
+.kit-item-qty.teal-qty{color:var(--teal);background:rgba(62,207,176,0.1);border-color:rgba(62,207,176,0.2);}
+.cond-kit-note{margin-top:1rem;padding:11px 15px;border-radius:var(--r2);font-size:12px;font-weight:600;line-height:1.6;font-family:'Nunito Sans',sans-serif;}
+.cond-kit-note.hot {background:rgba(255,82,82,0.08);border:1px solid rgba(255,82,82,0.2);color:#ff8080;}
+.cond-kit-note.rain{background:rgba(90,180,240,0.08);border:1px solid rgba(90,180,240,0.2);color:#7ab8f0;}
+.cond-kit-note.cool{background:rgba(79,195,247,0.08);border:1px solid rgba(79,195,247,0.2);color:#4fc3f7;}
+.kit-reset-btn{margin-top:1rem;background:transparent;border:1px solid var(--border2);border-radius:var(--r2);color:var(--text3);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer;transition:all 0.15s;}
+.kit-reset-btn:hover{border-color:var(--coral);color:var(--coral);}
+.section-divider{height:1px;background:var(--border);margin:2rem 0;}
+
+@media(max-width:600px){
+  .header{padding:1.25rem 1rem 1rem;}
+  .main{padding:1rem 1rem 3rem;}
+  .day-nav{padding:0.9rem 1rem;}
+  .stats-bar{flex-wrap:wrap;}
+  .stat-item{min-width:50%;}
+  .dur-bar{padding:8px 1rem;flex-wrap:wrap;gap:6px;}
+  .cond-banner{padding:8px 1rem;}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="brand">XC Race Prep<span class="brand-dot"> ·</span> Fuel</div>
+  <div class="tagline">7-day nutrition &amp; hydration planner</div>
+
+  <div class="controls-row">
+    <div class="ctrl-box">
+      <span class="ctrl-label">Weight</span>
+      <input class="weight-input" type="number" id="weightInput" value="70" min="30" max="200"/>
+      <div class="unit-toggle">
+        <button class="unit-btn active" id="btnKg" onclick="setUnit('kg')">kg</button>
+        <button class="unit-btn" id="btnLb" onclick="setUnit('lb')">lb</button>
+      </div>
+    </div>
+
+    <div class="ctrl-box">
+      <span class="ctrl-label">Conditions</span>
+      <div class="cond-btns">
+        <button class="cond-btn" id="cond-cool"   onclick="setCond('cool')">❄ Cool</button>
+        <button class="cond-btn active-normal" id="cond-normal" onclick="setCond('normal')">☀ Normal</button>
+        <button class="cond-btn" id="cond-hot"    onclick="setCond('hot')">🔥 Hot</button>
+        <button class="cond-btn" id="cond-rain"   onclick="setCond('rain')">🌧 Rainy</button>
+      </div>
+    </div>
+
+    <div class="ctrl-box">
+      <span class="ctrl-label">Race duration</span>
+      <div class="dur-btns">
+        <button class="dur-btn active" id="dur-sprint" onclick="setDur('sprint')">Under 45 min</button>
+        <button class="dur-btn" id="dur-short"  onclick="setDur('short')">45–75 min</button>
+        <button class="dur-btn" id="dur-medium" onclick="setDur('medium')">75–120 min</button>
+        <button class="dur-btn" id="dur-long"   onclick="setDur('long')">2+ hrs</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="cond-banner" id="condBanner">
+  <span class="cond-icon" id="condBannerIcon"></span>
+  <span id="condBannerText"></span>
+</div>
+
+<div class="stats-bar" id="statsBar"></div>
+<div class="dur-bar" id="durBar"></div>
+<nav class="day-nav" id="dayNav"></nav>
+<main class="main" id="mainContent"></main>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let weightKg=70, unit='kg', currentDay=0, condition='normal', duration='sprint';
+let kitChecked={};
+
+// ── Duration config ────────────────────────────────────────────────────────
+const durConfig={
+  sprint:{ label:'Under 45 min', carbHr:'20–30g', fluidHr:'400–500', gels:1,  gelNote:'1 gel only if race is close to 45 min — most riders need nothing for a 30 min effort', preGel:true,  preGelNote:'1 gel at −15 min is your main on-bike fuel for short races' },
+  short: { label:'45–75 min',    carbHr:'30–45g', fluidHr:'500–650', gels:2,  gelNote:'1 gel on the start line + 1 during if race exceeds 50 min', preGel:true,  preGelNote:'1 gel at −15 min + 1 mid-race if going over 50 min' },
+  medium:{ label:'75–120 min',   carbHr:'45–60g', fluidHr:'600–750', gels:4,  gelNote:'1 gel every 20–25 min from start — plan your feed zones', preGel:true,  preGelNote:'1 gel at −15 min then every 20–25 min on course' },
+  long:  { label:'2+ hours',     carbHr:'60–80g', fluidHr:'700–900', gels:6,  gelNote:'1 gel every 20 min + solid food (bars, chews) if race exceeds 2 hrs', preGel:true,  preGelNote:'1 caffeinated gel at −15 min then mix gels and bars every 20 min' },
+};
+
+// ── Condition config ───────────────────────────────────────────────────────
+const condConfig={
+  normal:{ label:'Normal',      fluidMult:1.0,  elecSodium:'200–400', onBikeExtra:'' },
+  cool:  { label:'Cool/Cold',   fluidMult:0.85, elecSodium:'200–350', onBikeExtra:' — cool air is still dehydrating, keep drinking' },
+  hot:   { label:'Very Hot',    fluidMult:1.35, elecSodium:'300–500', onBikeExtra:' — non-negotiable in heat, never skip a bottle' },
+  rain:  { label:'Rainy',       fluidMult:1.0,  elecSodium:'200–400', onBikeExtra:' — rain doesn\'t stop sweat loss, drink on schedule' },
+};
+
+const condBanners={
+  hot: { cls:'hot-banner',  icon:'🔥', text:'<strong>Hot conditions:</strong> fluid targets up ~35% across the whole week. Prioritise sodium-rich electrolyte drinks over plain water. Salty snacks are your friend.' },
+  cool:{ cls:'cool-banner', icon:'❄',  text:'<strong>Cool/cold conditions:</strong> you\'ll feel less thirsty but still dehydrate. Fluid targets slightly reduced. Watch for muscle stiffness — warm up properly.' },
+  rain:{ cls:'rain-banner', icon:'🌧', text:'<strong>Rainy conditions:</strong> sweat loss is real even in rain. Fluid targets unchanged. Protect nutrition in zip-lock bags and use wet lube on chain tonight.' },
+};
+
+function setCond(c){
+  condition=c;
+  ['cool','normal','hot','rain'].forEach(x=>{ document.getElementById('cond-'+x).className='cond-btn'+(x===c?' active-'+x:''); });
+  const banner=document.getElementById('condBanner');
+  if(condBanners[c]){ const b=condBanners[c]; banner.className='cond-banner visible '+b.cls; document.getElementById('condBannerIcon').textContent=b.icon; document.getElementById('condBannerText').innerHTML=b.text; }
+  else{ banner.className='cond-banner'; }
+  render();
+}
+
+function setDur(d){
+  duration=d;
+  ['sprint','short','medium','long'].forEach(x=>{ document.getElementById('dur-'+x).className='dur-btn'+(x===d?' active':''); });
+  render();
+}
+
+function setUnit(u){
+  unit=u;
+  document.getElementById('btnKg').classList.toggle('active',u==='kg');
+  document.getElementById('btnLb').classList.toggle('active',u==='lb');
+  document.getElementById('weightInput').value=u==='lb'?Math.round(weightKg*2.205):Math.round(weightKg);
+  render();
+}
+
+document.getElementById('weightInput').addEventListener('input',e=>{ const v=parseFloat(e.target.value)||70; weightKg=unit==='kg'?v:v/2.205; render(); });
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+const cc=()=>condConfig[condition];
+const dc=()=>durConfig[duration];
+function carbRange(lo,hi){ return `${Math.round(lo*weightKg)}–${Math.round(hi*weightKg)}g`; }
+function fluidMl(base){ return Math.round(base*cc().fluidMult); }
+function fluidStr(base){ const ml=fluidMl(base); return ml>=1000?(ml/1000).toFixed(1)+'L':ml+'ml'; }
+function f(ml){ return fluidStr(ml); }
+
+// Condition + duration inline notes
+function condNote(hot,rain,cool){
+  if(condition==='hot'&&hot)   return `<span class="cond-inline">${hot}</span>`;
+  if(condition==='rain'&&rain) return `<span class="cond-inline rain-inline">${rain}</span>`;
+  if(condition==='cool'&&cool) return `<span class="cond-inline cool-inline">${cool}</span>`;
+  return '';
+}
+function durNote(sprint,short,medium,long){
+  const map={sprint,short,medium,long};
+  const txt=map[duration];
+  return txt?`<span class="dur-inline">${txt}</span>`:'';
+}
+
+// On-bike fluid target adjusted for both condition AND duration
+function onBikeFluid(){
+  const dc_=dc(), mult=cc().fluidMult;
+  const parts=dc_.fluidHr.split('–').map(Number);
+  return `${Math.round(parts[0]*mult)}–${Math.round(parts[1]*mult)}`;
+}
+
+// ── Duration bar ───────────────────────────────────────────────────────────
+function renderDurBar(){
+  const d=dc();
+  document.getElementById('durBar').innerHTML=
+    `<span class="dur-pill">${d.label}</span>
+     <span class="dur-text">On bike: <em>${d.carbHr} carbs/hr</em> · <em>${onBikeFluid()}ml fluid/hr</em> · <em>${d.gels} gel${d.gels!==1?'s':''} planned</em> · ${d.gelNote}</span>`;
+}
+
+// ── Day data ───────────────────────────────────────────────────────────────
+function getDays(){
+  const w=weightKg, d=dc(), c=cc();
+  return [
+    { id:'d7',label:'Mon',sublabel:'−7 days',title:'Monday — 7 days out',subtitle:'Normal training · Start carb awareness',
+      note:`Carb target: ${carbRange(5,7)} · Water: ~3L base + 600ml per training hour`, carbNote:[5,7], waterBase:3000,
+      rows:[
+        ['6:30 AM','water',`${f(500)} water on waking — before coffee, before anything`],
+        ['7:00 AM','meal',`Oats (2 cups cooked) + banana + honey + blueberries + 2 scrambled eggs. <em>~80g carbs, 25–30g protein.</em> 300ml water or coffee.`+condNote(`Hot: add a pinch of salt to oats. Drink an extra 200ml water with breakfast.`,'','')],
+        ['9:30 AM','water',`${f(350)} water — sip steadily`],
+        ['10:00 AM','snack','1 banana + 1 tbsp peanut butter <small>~30g carbs</small>'],
+        ['12:30 PM','meal',`White rice or pasta (2 cups cooked) + grilled chicken (150g) + cooked veg + olive oil. <em>~80g carbs, 40g protein.</em> ${f(400)} water.`],
+        ['3:00 PM','snack',`Greek yogurt (200g) + granola + sliced apple. ${f(250)} water. <small>~40g carbs, 15g protein</small>`],
+        ['5:00 PM','water',`${f(300)} water or electrolyte drink before training`+condNote(`Hot: use ${f(450)} electrolyte mix — not plain water.`,'','')],
+        ['5:30 PM','pre',`Pre-ride: banana or energy bar 30 min before. <em>~${Math.round(w)}–${Math.round(w*2)}g carbs.</em> ${f(500)} electrolyte drink during.`],
+        ['7:00 PM','meal',`Salmon or chicken (150g) + sweet potato (1 large) + steamed broccoli. ${f(400)} water. <small>~70g carbs</small>`],
+        ['8:30 PM','snack','Cottage cheese (150g) or glass of milk — slow protein before sleep. 200ml water.'],
+      ]},
+    { id:'d6',label:'Tue',sublabel:'−6 days',title:'Tuesday — 6 days out',subtitle:'Moderate training · Consistent fueling',
+      note:`Carb target: ${carbRange(5,7)} · Add electrolyte drink to one daily bottle`, carbNote:[5,7], waterBase:3200,
+      rows:[
+        ['6:30 AM','water',`${f(500)} water on waking`],
+        ['7:00 AM','meal','3 eggs scrambled + 2 slices whole grain toast + avocado + 1 banana. 300ml water or coffee. <small>~70g carbs, 30g protein</small>'],
+        ['9:30 AM','snack','Rice cake + peanut butter + honey. 300ml water. <small>~30g carbs</small>'],
+        ['12:00 PM','meal',`Pasta (2 cups cooked) + tomato sauce + ground turkey + parmesan. Light salad. ${f(400)} water. <small>~80g carbs</small>`],
+        ['2:30 PM','water',`${f(300)} water — keep sipping`],
+        ['3:30 PM','snack','Trail mix (nuts, dried mango, pretzels) 35g. 250ml water. <small>~25g carbs</small>'],
+        ['5:30 PM','pre',`1–2g carbs/kg = <em>${Math.round(w)}–${Math.round(w*2)}g</em> 2 hrs before ride. Banana or bar. ${f(500)} electrolyte during.`],
+        ['7:30 PM','meal',`Post-ride within 30–45 min: white rice (2 cups) + grilled chicken thighs (150g) + zucchini. ${f(400)} water. <small>~80g carbs</small>`],
+        ['9:00 PM','snack','Chocolate milk 300ml — great recovery combo. <small>~30g carbs, 10g protein</small>'],
+      ]},
+    { id:'d5',label:'Wed',sublabel:'−5 days',title:'Wednesday — 5 days out',subtitle:'Carb loading begins · Short ride only',
+      note:`Carb target: ${carbRange(7,9)} · Add 500ml extra water vs normal · Cut fiber-heavy veg`, carbNote:[7,9], waterBase:3500,
+      rows:[
+        ['6:30 AM','water',`${f(500)} water on waking`],
+        ['7:00 AM','meal',`Large oats (2.5 cups cooked) + honey + banana + raisins + 2 slices white toast + jam. 300ml water. <small>~120g carbs</small>`+condNote('Start adding electrolyte tabs to your water today — sodium matters now.','','')],
+        ['9:30 AM','snack',`1 banana + energy bar. ${f(300)} water. <small>~60g carbs</small>`],
+        ['12:00 PM','meal',`Extra large pasta (2.5 cups) + light tomato sauce + chicken. No heavy salads. ${f(400)} water. <small>~100g carbs</small>`],
+        ['2:30 PM','snack','White bagel + honey + peanut butter. 300ml water. <small>~55g carbs</small>'],
+        ['4:00 PM','water',`${f(300)} extra water — 500ml above normal today`],
+        ['6:30 PM','meal',`White rice (2.5 cups) + salmon + cooked carrots. Avoid broccoli/beans/cabbage. ${f(400)} water. <small>~95g carbs</small>`],
+        ['8:30 PM','snack','White rice with honey, or 2 rice cakes with jam. 200ml water. 8–9 hrs sleep. <small>~50g carbs</small>'],
+      ]},
+    { id:'d4',label:'Thu',sublabel:'−4 days',title:'Thursday — 4 days out',subtitle:'Easy spin only · Full carb load',
+      note:`Carb target: ${carbRange(7,9)} · White refined carbs — digest fast, store as glycogen`, carbNote:[7,9], waterBase:3500,
+      rows:[
+        ['6:30 AM','water',`${f(500)} water on waking`],
+        ['7:00 AM','meal','White toast (3 slices) + jam + honey + 1 banana + 200ml fruit juice. 300ml water. <small>~110g carbs</small>'],
+        ['9:00 AM','snack',`2 rice cakes + honey. ${f(300)} electrolyte drink. <small>~40g carbs</small>`],
+        ['11:00 AM','water',`${f(300)} water`],
+        ['12:30 PM','meal',`White rice bowl (2.5 cups) + chicken or tuna + corn + olive oil. No raw veg. ${f(400)} water. <small>~100g carbs</small>`],
+        ['3:00 PM','snack',`Banana + pretzels. ${f(300)} water. <small>~45g carbs</small>`],
+        ['5:00 PM','water',`${f(300)} electrolyte drink before easy spin`],
+        ['7:00 PM','meal',`Pasta (3 cups cooked) + light tomato-chicken sauce + white roll. ${f(400)} water. <small>~120g carbs</small>`],
+        ['9:00 PM','snack','Rice pudding or white toast + honey. 250ml water. Bed early. <small>~50g carbs</small>'],
+      ]},
+    { id:'d3',label:'Fri',sublabel:'−3 days',title:'Friday — 3 days out',subtitle:'Rest or 20 min spin · Glycogen topped off',
+      note:'Cut caffeine today if you plan to use it race morning — let tolerance reset.', carbNote:[7,9], waterBase:3200,
+      rows:[
+        ['6:30 AM','water',`${f(500)} water on waking`],
+        ['7:00 AM','meal','Oatmeal (2 cups) + honey + banana + raisins + 1 glass OJ. 300ml water. <small>~100g carbs</small>'],
+        ['10:00 AM','snack','Apple + 2 rice cakes + almond butter. 300ml water. <small>~45g carbs</small>'],
+        ['12:30 PM','meal',`Big lunch — pasta or rice + tuna or chicken. Largest meal today. Cooked veg only. ${f(400)} water. <small>~100g carbs</small>`],
+        ['3:00 PM','water',`${f(350)} water. Check urine — pale straw.`],
+        ['3:30 PM','snack','Energy bar + banana. Keep caffeine low. 250ml water. <small>~60g carbs</small>'],
+        ['7:00 PM','meal',`White rice (2 cups) + chicken + cooked carrots or peas. Moderate dinner. ${f(400)} water. <small>~80g carbs</small>`],
+        ['9:00 PM','snack','Corn flakes + milk. 200ml water. <small>~40g carbs</small>'],
+      ]},
+    { id:'d2',label:'Sat',sublabel:'−2 days',title:'Saturday — 2 days out',subtitle:'Shakeout ride · Pack race kit tonight',
+      note:'Familiar foods only. No new restaurants. Pack everything tonight.', carbNote:[6,8], waterBase:3200, isKitDay:true,
+      rows:[
+        ['6:30 AM','water',`${f(500)} water on waking`],
+        ['7:00 AM','meal',`White toast (2–3 slices) + eggs + jam + 1 banana. 300ml water. <small>~80g carbs</small>`],
+        ['9:30 AM','pre',`30 min before shakeout: banana or bar. ${f(300)} electrolyte drink during. <em>~${Math.round(w)}g carbs.</em>`],
+        ['11:00 AM','snack',`Rice cake + peanut butter + honey. ${f(300)} water. <small>~35g carbs</small>`],
+        ['1:00 PM','meal',`Pasta or rice + chicken or fish. Cooked veg. ${f(400)} water. <small>~80g carbs</small>`],
+        ['3:30 PM','snack',`Banana + pretzels. ${f(300)} water. <small>~45g carbs</small>`],
+        ['5:30 PM','water',`${f(300)} water — sip steadily`+condNote('Pre-mix extra electrolyte bottles and refrigerate tonight.','Pack gels in zip-lock bags tonight — rain will soak jersey pockets.','')],
+        ['7:00 PM','meal',`Pasta + chicken + light sauce OR rice + fish. Nothing creamy or unfamiliar. By 7:30 PM. ${f(400)} water. <small>~80g carbs</small>`],
+        ['9:00 PM','snack','2 rice cakes + honey or cereal. Bed by 10 PM. <small>~35g carbs</small>'],
+      ]},
+    { id:'d1',label:'Sun',sublabel:'−1 day',title:'Sunday — 1 day out',subtitle:'Full rest · Final prep · Lights out by 10 PM',
+      note:'No training. No new foods. Dinner by 7 PM. Electrolyte drink tonight is critical.', carbNote:[6,8], waterBase:3200,
+      rows:[
+        ['7:00 AM','water',`${f(500)} water on waking`],
+        ['7:30 AM','meal','Oats + honey + banana OR white toast + eggs + jam. 300ml water or 1 coffee. <small>~80g carbs</small>'],
+        ['10:00 AM','snack',`Banana + rice cake + honey. ${f(300)} water. <small>~45g carbs</small>`],
+        ['12:30 PM','meal',`Big lunch — rice or pasta + chicken. Main carb top-up. Cooked veg. ${f(400)} water. <small>~100g carbs</small>`],
+        ['3:00 PM','snack',`Energy bar + banana. ${f(300)} water. Check urine. <small>~55g carbs</small>`],
+        ['5:00 PM','water',`${f(500)} electrolyte drink — sodium retains fluid overnight. Critical.`+condNote(`Hot tomorrow: drink ${f(600)} and add salt to dinner.`,'','')],
+        ['6:30 PM','meal',`Moderate dinner by 7 PM: pasta or rice + chicken. Nothing heavy. ${f(400)} water. <small>~80g carbs</small>`],
+        ['8:30 PM','snack','2 rice cakes + honey or cereal. Last food. 200ml water. <small>~35g carbs</small>'],
+        ['10:00 PM','water','Lights out. Everything is prepped.'],
+      ]},
+    { id:'rd',label:'Race',sublabel:'Race day',title:'Race day',subtitle:'Times relative to race start — adjust to your actual start',
+      note:`Never try a new gel or drink today. Only products you have trained with.`, carbNote:null, waterBase:null,
+      rows:[
+        ['−3.5 hrs','water',`${f(500)} water on waking`+condNote(`Hot: ${f(600)} and start electrolytes immediately.`,'','')],
+        ['−3 hrs','meal',`Breakfast: 2–3 cups oatmeal or white rice + 1 banana + peanut butter or 2 eggs. <em>Target ~${Math.round(w*2)}g carbs (2g/kg).</em> 300ml water or 1 coffee.`+condNote('Add a pinch of salt to oats.',`Cool: same carb amount — don't skip because you feel less hot.`,'')],
+        ['−2 hrs','snack',`Light if hungry: half banana, white toast + honey, or plain bar. ${f(350)} water over this hour.`+durNote(`Sprint race: you're mostly fuelled — keep this very light or skip entirely.`,`Short race: a small snack is fine, don't overdo it.`,'','')],
+        ['−75 min','water',`${f(250)} electrolyte drink — begin sodium pre-loading`+condNote(`Hot: ${f(350)}, minimum 300mg sodium per 500ml.`,'','')],
+        ['−60 min','pre','Warm-up begins. Sip electrolyte drink. No solid food from here.'],
+        ['−15 min','pre',`1 energy gel (~50mg caffeine if trained with it) + ${f(180)} water. <em>~${Math.round(w)}g carbs.</em>`+durNote('Sprint: this gel is your main on-bike fuel — the race is short enough you may need nothing else.','Short: this gel + 1 mid-race if over 50 min.','Medium: this + 1 every 20–25 min on course.','Long: caffeinated gel here, then mix gels and bars every 20 min.')],
+        ['During','during',`On bike: <em>${onBikeFluid()}ml fluid/hr</em>${c.onBikeExtra}. <em>${d.carbHr} carbs/hr</em>. `+durNote('Sprint: sip from 1 bottle — you likely won\'t need a gel mid-race under 35 min.','Short: 1–2 sips every 10–15 min. 1 gel if race goes past 50 min.','Medium: gel every 20–25 min. Drink every 15 min minimum.','Long: gel or solid food every 20 min. If over 2 hrs, add bars or chews from lap 2 onwards.')],
+        ['Finish +5','water',`${f(500)} water or electrolyte drink immediately`+condNote(`Hot: ${f(700)} and get out of the sun.`,'','')],
+        ['Finish +30','post',`<em>${Math.round(w)}g carbs + 20–25g protein</em> within 30 min. Chocolate milk, shake, or rice + chicken. Keep drinking until urine is pale.`],
+      ]},
+  ];
+}
+
+// ── Gear checklist ────────────────────────────────────────────────────────
+function getKitSections(){
+  const w=weightKg, d=dc(), isHot=condition==='hot', isRain=condition==='rain', isCool=condition==='cool';
+  const isLong=duration==='long', isMedium=duration==='medium', isSprint=duration==='sprint';
+  const gels=d.gels, bottles=isHot?3:2;
+
+  return [
+    { title:'Nutrition & fuel', icon:'⚡', items:[
+      { name:'Energy gels', detail:'Only brands you have trained with — no new products on race day', qty:`${gels} gel${gels!==1?'s':''}`, condStyle: isHot&&gels<5?'hot':null, condQty: isHot?`${gels+1} gels (hot — pack 1 extra)`:null },
+      { name:'Energy bars / chews', detail: isSprint?'Not needed for sprint races — gels only':'Backup solid fuel, especially important for longer races', qty: isSprint?'Skip':isLong?'2–3 bars':'1–2 bars', condStyle: isSprint?null:(isLong?'teal':null) },
+      { name:'Race breakfast food', detail:'Oats, white bread, banana, honey — pre-packed at home tonight', qty:'Packed' },
+      { name:'Pre-race snack (−2 hr)', detail:'Half banana or plain rice cake for the −2 hr window', qty:'1 serving', condStyle: isSprint?null:null },
+      { name:'Post-race recovery', detail:'Chocolate milk carton or recovery shake powder + shaker', qty:'1 serving' },
+      ...(isLong?[{ name:'Mid-race solid food', detail:'Bars or chews for lap 2+ — zip-lock bag in jersey pocket', qty:'2 bars', condStyle:'teal' }]:[]),
+    ]},
+    { title:'Hydration', icon:'💧', items:[
+      { name:'Water bottles', detail:'Filled and ready — check cage bolts', qty:`${bottles} bottles`, condQty: isHot?`${bottles+1} bottles (hot — extra capacity)`:isRain?`${bottles} bottles (rain — still drink on schedule)`:null, condStyle: isHot?'hot':isRain?'rain':null },
+      { name:'Electrolyte mix / tabs', detail:`Pre-measured: ${cc().elecSodium}mg sodium per 500ml`, qty: isHot?`${bottles+1} doses`:`${bottles} doses`, condStyle: isHot?'hot':null },
+      { name:'Electrolyte drink for warm-up', detail:'250–350ml in a separate bottle for the start line', qty:'1 bottle' },
+      { name:'Post-race electrolyte drink', detail:'Pre-mixed and waiting at your bag', qty:`${f(500)}+` },
+      ...(isHot?[{ name:'Ice / cooling towel', detail:'For post-race cooling — soak in ice water if available', qty:'1 towel', condStyle:'hot' }]:[]),
+    ]},
+    { title:'Bike & equipment', icon:'🚲', items:[
+      { name:'Helmet', detail:'Check fit and retention system. Clean visor.', qty:'Check fit' },
+      { name:'Gloves', detail:'Race gloves on, backup pair in bag', qty:'1 pair', condQty: isRain?'2 pairs (wet gloves are miserable)':isCool?'2 pairs (keep one dry)':null, condStyle: isRain?'rain':isCool?'cool':null },
+      { name:'Shoes & cleats', detail:'Check cleat bolt tension. Dry socks packed.', qty:'Check bolts' },
+      { name:'Glasses / goggles', detail:'Clean lenses — right tint for conditions', qty: isHot?'Dark lens':isRain?'Clear/yellow lens':'Normal', condStyle: isHot?'hot':isRain?'rain':null },
+      { name:'Tyre pressure', detail:'Set tonight, recheck race morning', qty:'Set tonight' },
+      { name:'Chain lubed', detail: isRain?'Wet lube — apply tonight':'Dry lube — apply tonight', qty: isRain?'Wet lube':'Dry lube', condStyle: isRain?'rain':null },
+      { name:'Spare tube + CO2 / pump', detail:'On the bike or in pack', qty:'1 tube + 2 CO2' },
+      { name:'Multi-tool', detail:'In pack or jersey pocket', qty:'1' },
+      ...(isLong?[{ name:'Extra nutrition storage', detail:'Top tube bag or hydration pack for long race', qty:'1 bag', condStyle:'teal' }]:[]),
+    ]},
+    { title:'Kit & clothing', icon:'👕', items:[
+      { name:'Race jersey', detail:'Clean and laid out. Pockets pre-loaded with gels.', qty:`${gels} gels in pockets` },
+      { name:'Shorts / bibs', detail:'Check chamois cream packed', qty:'1 pair' },
+      { name:'Base layer', detail: isCool?'Thermal base layer — cool conditions':'Lightweight wicking layer', qty:'1', condStyle: isCool?'cool':null },
+      ...(isRain?[{ name:'Rain jacket / gilet', detail:'Lightweight, fits in back jersey pocket', qty:'1', condStyle:'rain' }]:[]),
+      ...(isCool?[{ name:'Arm / leg warmers', detail:'Can be removed during race as you warm up', qty:'1 set', condStyle:'cool' }]:[]),
+      ...(isHot?[{ name:'Cooling cap / sweatband', detail:'Under helmet to help with heat management', qty:'1', condStyle:'hot' }]:[]),
+      { name:'Race number / plate', detail:'Pinned or zip-tied — check rules for placement', qty:'Attached' },
+      { name:'Timing chip', detail:'Strapped to ankle or as directed by organiser', qty:'Attached' },
+    ]},
+    { title:'Admin & misc', icon:'📋', items:[
+      { name:'Race entry confirmation', detail:'Email or printed — have it accessible at check-in', qty:'Ready' },
+      { name:'Cash / card', detail:'Registration desk, parking, food at venue', qty:'In bag' },
+      { name:'Phone charged', detail:'Map, contacts, emergency. Airplane mode during race.', qty:'100%' },
+      { name:'Sunscreen', detail: isHot?'Apply tonight AND morning — SPF 50+':'Apply morning of race', qty: isHot?'SPF 50+ ×2':'SPF 30+', condStyle: isHot?'hot':null },
+      { name:'Warm-up clothes', detail:'For post-race and keeping warm on the start line', qty:'1 set' },
+      { name:'First aid basics', detail:'Plasters, ibuprofen, anti-chafe cream', qty:'In bag' },
+    ]},
+  ];
+}
+
+// ── Render helpers ─────────────────────────────────────────────────────────
+function badgeHTML(type){
+  const m={meal:['b-meal','Meal'],snack:['b-snack','Snack'],water:['b-water','Water'],pre:['b-pre','Pre-ride'],during:['b-during','On bike'],post:['b-post','Recovery']};
+  const[cls,label]=m[type]||['b-snack',type];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function renderStats(){
+  const days=getDays(), day=days[currentDay], isRace=day.id==='rd', w=weightKg, c=cc(), d=dc();
+  const items=isRace?[
+    { key:'Pre-race carbs', val:Math.round(w*2)+'g', unit:'2g/kg at breakfast', cls:'' },
+    { key:'On-bike fluid', val:onBikeFluid(), unit:'ml per hour', cls:condition==='hot'?'hot-val':'' },
+    { key:'Carbs per hour', val:d.carbHr, unit:'on-bike target', cls:'teal-val' },
+    { key:'Gels planned', val:d.gels+'', unit:d.label+' race', cls:'teal-val' },
+  ]:[
+    { key:'Carb target', val:`${Math.round((day.carbNote||[5])[0]*w)}–${Math.round((day.carbNote||[7])[1]*w)}g`, unit:'grams/day', cls:'' },
+    { key:'Daily water', val:day.waterBase?(fluidMl(day.waterBase)>=1000?(fluidMl(day.waterBase)/1000).toFixed(1)+'L':fluidMl(day.waterBase)+'ml'):'3L', unit:condition==='hot'?'hot conditions ↑':'target incl. training', cls:condition==='hot'?'hot-val':'' },
+    { key:'Conditions', val:c.label, unit:'fluid targets adjusted', cls:condition==='hot'?'hot-val':condition==='rain'?'':'' },
+    { key:'Your weight', val:unit==='kg'?Math.round(w)+'kg':Math.round(w*2.205)+'lb', unit:'all targets use this', cls:'' },
+  ];
+  document.getElementById('statsBar').innerHTML=items.map(i=>`<div class="stat-item"><div class="stat-key">${i.key}</div><div class="stat-val ${i.cls}">${i.val}</div><div class="stat-unit">${i.unit}</div></div>`).join('');
+}
+
+function renderNav(){
+  const days=getDays();
+  document.getElementById('dayNav').innerHTML=days.map((d,i)=>{
+    let ex=d.id==='rd'?'race':d.isKitDay?'kit-day':'';
+    return `<button class="day-btn ${ex} ${i===currentDay?'active':''}" onclick="selectDay(${i})">${d.label} <span style="opacity:0.55;font-size:10px;">${d.sublabel}</span></button>`;
+  }).join('');
+}
+
+function toggleKit(si,ii){ const k=`${si}_${ii}`; kitChecked[k]=!kitChecked[k]; renderMain(); }
+function resetKit(){ kitChecked={}; renderMain(); }
+
+function kitProgressHTML(sections){
+  let total=0,done=0;
+  sections.forEach((s,si)=>s.items.forEach((_,ii)=>{ total++; if(kitChecked[`${si}_${ii}`])done++; }));
+  const pct=total?Math.round(done/total*100):0;
+  return `<div class="kit-progress-bar"><div class="kit-progress-fill" style="width:${pct}%"></div></div><div class="kit-progress-label">${done} / ${total} items packed (${pct}%)</div>`;
+}
+
+function kitHTML(sections){
+  return sections.map((section,si)=>{
+    const sectionDone=section.items.filter((_,ii)=>kitChecked[`${si}_${ii}`]).length;
+    const items=section.items.map((item,ii)=>{
+      const checked=!!kitChecked[`${si}_${ii}`];
+      const qty=(item.condQty&&condition!=='normal')?item.condQty:item.qty;
+      const qtyClass=item.condStyle==='hot'?'hot-qty':item.condStyle==='rain'?'rain-qty':item.condStyle==='cool'?'cool-qty':item.condStyle==='teal'?'teal-qty':'';
+      return `<div class="kit-item ${checked?'checked':''}" onclick="toggleKit(${si},${ii})">
+        <div class="kit-checkbox"><span class="kit-checkmark">✓</span></div>
+        <div class="kit-item-text"><div class="kit-item-name">${item.name}</div><div class="kit-item-detail">${item.detail}</div></div>
+        <div class="kit-item-qty ${qtyClass}">${qty}</div>
+      </div>`;
+    }).join('');
+    return `<div class="kit-section">
+      <div class="kit-section-head"><div class="kit-section-title"><span>${section.icon}</span>${section.title}</div><div class="kit-section-count">${sectionDone}/${section.items.length}</div></div>
+      ${items}
+    </div>`;
+  }).join('');
+}
+
+function renderMain(){
+  const days=getDays(), day=days[currentDay], isRace=day.id==='rd', w=weightKg, c=cc();
+  let condNoteRow='';
+  if(condition==='hot')  condNoteRow=`<div class="cond-note-row"><span class="cond-note hot">🔥 Hot conditions: all fluid targets increased ~35%. Use electrolyte drinks over plain water. Check urine every few hours.</span></div>`;
+  else if(condition==='rain') condNoteRow=`<div class="cond-note-row"><span class="cond-note rain">🌧 Rainy: sweat loss is real even in rain — drink on schedule. Protect gels in zip-lock bags.</span></div>`;
+  else if(condition==='cool') condNoteRow=`<div class="cond-note-row"><span class="cond-note cool">❄ Cool: fluid targets slightly reduced. Don't skip water — cold air dehydrates. Warm up thoroughly.</span></div>`;
+
+  const rows=day.rows.map(([time,type,text])=>`<tr><td class="time-cell">${time}</td><td class="type-cell">${badgeHTML(type)}</td><td class="food-text">${text}</td></tr>`).join('');
+  const carbCard=day.carbNote?`<div class="carb-target"><strong>${Math.round(day.carbNote[0]*w)}–${Math.round(day.carbNote[1]*w)}g</strong> carbs today (${day.carbNote[0]}–${day.carbNote[1]}g/kg at ${Math.round(w)}kg)</div>`:'';
+  const hydCards=!isRace?`<div class="hydration-row">
+    <div class="hydration-card ${condition==='hot'?'hot-card':condition==='rain'?'rain-card':''}"><div class="hkey">Water target</div><div class="hval">${day.waterBase?(fluidMl(day.waterBase)>=1000?(fluidMl(day.waterBase)/1000).toFixed(1)+'L':fluidMl(day.waterBase)+'ml'):'3L'}</div></div>
+    <div class="hydration-card ${condition==='hot'?'hot-card':''}"><div class="hkey">Sodium per 500ml</div><div class="hval">${c.elecSodium}mg</div></div>
+    <div class="hydration-card"><div class="hkey">Urine check</div><div class="hval">Pale straw</div></div>
+  </div>`:'';
+
+  let kitSection='';
+  if(day.isKitDay){
+    const sections=getKitSections();
+    const condKitNote=condition!=='normal'?`<div class="cond-kit-note ${condition}">${
+      condition==='hot'?'🔥 <strong>Hot conditions:</strong> pack an extra bottle, extra gel, electrolyte mix for 3 bottles, cooling towel, and SPF 50+ sunscreen. Pre-mix bottles tonight and refrigerate.':
+      condition==='rain'?'🌧 <strong>Rainy conditions:</strong> pack rain jacket, 2 pairs of gloves, clear/yellow lens glasses, and wet lube your chain tonight. Put all gels and bars in a zip-lock bag.':
+      condition==='cool'?'❄ <strong>Cool/cold conditions:</strong> pack arm warmers, leg warmers, thermal base layer, and full-finger gloves. Layers you can remove mid-race are ideal.':''
+    }</div>`:'';
+    const durKitNote=`<div class="cond-kit-note" style="background:rgba(62,207,176,0.06);border:1px solid rgba(62,207,176,0.18);color:var(--teal);margin-top:8px;">
+      ⏱ <strong>${dc().label} race:</strong> ${dc().preGelNote}. Gel count: <strong>${dc().gels} gel${dc().gels!==1?'s':''}</strong> packed.
+    </div>`;
+    kitSection=`
+      <div class="section-divider"></div>
+      <div class="day-title" style="font-size:1.15rem;">Race kit checklist</div>
+      <div class="kit-intro">Pack everything tonight. Checking off items now means nothing gets left behind at the trailhead at 6 AM.</div>
+      ${kitProgressHTML(sections)}
+      ${condKitNote}
+      ${durKitNote}
+      <div class="kit-sections">${kitHTML(sections)}</div>
+      <button class="kit-reset-btn" onclick="resetKit()">Reset checklist</button>
+    `;
+  }
+
+  document.getElementById('mainContent').innerHTML=`
+    <div class="day-header" style="margin-bottom:1.1rem;">
+      <div class="day-title">${day.title}</div>
+      <div class="day-subtitle">${day.subtitle}</div>
+      <div class="day-note">${day.note}</div>
+      ${condNoteRow}
+    </div>
+    ${carbCard}
+    <div class="table-wrap"><table>
+      <thead><tr><th style="width:80px;">Time</th><th style="width:88px;">Type</th><th>What to eat / drink</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    ${hydCards}
+    ${kitSection}
+  `;
+}
+
+function selectDay(i){ currentDay=i; render(); }
+function render(){ renderStats(); renderDurBar(); renderNav(); renderMain(); }
+render();
+</script>
+</body>
+</html>
