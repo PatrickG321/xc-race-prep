@@ -1,774 +1,2145 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>XC Race Prep — Nutrition Planner</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Nunito+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --bg:#1a1a1a;
-  --bg2:#222222;
-  --bg3:#2a2a2a;
-  --surface:#2e2e2e;
-  --surface2:#363636;
-  --border:rgba(255,255,255,0.07);
-  --border2:rgba(255,255,255,0.13);
-  --orange:#ff7a2f;
-  --orange2:#e86820;
-  --orange3:#ff9a5c;
-  --orange-dim:rgba(255,122,47,0.1);
-  --orange-mid:rgba(255,122,47,0.2);
-  --text:#f0ede8;
-  --text2:#a8a29c;
-  --text3:#6b6560;
-  --teal:#3ecfb0;
-  --blue:#5ab4f0;
-  --coral:#ff5252;
-  --gold:#f0c040;
-  --r:12px;
-  --r2:16px;
-  --r3:20px;
-}
-body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Studdy Buddy</title>
 
-/* ── HEADER ── */
-.header{
-  padding:2rem 2rem 1.5rem;
-  border-bottom:1px solid var(--border);
-  text-align:center;
-  position:relative;
-}
-.brand{
-  font-family:'Nunito',sans-serif;
-  font-weight:900;
-  font-size:clamp(1.8rem,5vw,2.8rem);
-  color:var(--orange);
-  letter-spacing:-0.01em;
-  line-height:1;
-}
-.brand-dot{color:var(--text3);}
-.tagline{
-  font-family:'Nunito',sans-serif;
-  font-size:13px;
-  color:var(--text3);
-  font-weight:600;
-  letter-spacing:0.06em;
-  text-transform:uppercase;
-  margin-top:5px;
-}
+  <!-- NAV FUNCTION — isolated script so it works even if main script has errors -->
+  <script>
+    function nav(p) {
+      // Hide every page
+      var pages = document.querySelectorAll('.page');
+      for (var i = 0; i < pages.length; i++) {
+        pages[i].style.display = 'none';
+        pages[i].classList.remove('active');
+      }
+      // Show target page
+      var target = document.getElementById('page-' + p);
+      if (!target) { console.error('nav(): page not found: page-' + p); return; }
+      target.style.display = 'flex';
+      target.classList.add('active');
+      // Scroll page-body to top
+      var body = target.querySelector('.page-body');
+      if (body) body.scrollTop = 0;
+      // Reset tutors chat panels when entering tutors page
+      if (p === 'tutors') {
+        var lv = document.getElementById('tutors-list-view');
+        var cv = document.getElementById('tutors-chat-view');
+        if (lv) { lv.classList.remove('chat-panel-out'); lv.scrollTop = 0; }
+        if (cv) cv.classList.remove('chat-panel-in');
+        if (window.chatTimerRef) { clearTimeout(window.chatTimerRef); window.chatTimerRef = null; }
+      }
+      // Bottom nav: show on main pages, hide on login / signup
+      var nb = document.getElementById('bottom-nav');
+      var mainPages = ['home', 'schedule', 'study', 'tutors', 'events'];
+      if (mainPages.indexOf(p) !== -1) {
+        nb.style.display = 'flex';
+        // Highlight active nav item
+        var items = document.querySelectorAll('.nav-item');
+        for (var j = 0; j < items.length; j++) items[j].classList.remove('active');
+        var activeBtn = document.getElementById('nav-' + p);
+        if (activeBtn) activeBtn.classList.add('active');
+        // Update SVG icon colours
+        mainPages.forEach(function(pg) {
+          var ico = document.getElementById('ico-' + pg);
+          if (ico) ico.setAttribute('fill', pg === p ? '#378ADD' : '#7AABCC');
+        });
+      } else {
+        nb.style.display = 'none';
+      }
+      console.log('nav() → page-' + p);
+    }
+  </script>
 
-/* Controls row */
-.controls-row{
-  display:flex;
-  gap:10px;
-  justify-content:center;
-  flex-wrap:wrap;
-  margin-top:1.25rem;
-}
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-/* Weight box */
-.ctrl-box{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  background:var(--surface);
-  border:1px solid var(--border2);
-  border-radius:var(--r2);
-  padding:9px 14px;
-}
-.ctrl-label{
-  font-family:'Nunito',sans-serif;
-  font-size:11px;
-  font-weight:700;
-  color:var(--text3);
-  text-transform:uppercase;
-  letter-spacing:0.07em;
-  white-space:nowrap;
-}
-.weight-input{
-  width:58px;background:var(--bg3);
-  border:1px solid var(--border2);border-radius:10px;
-  color:var(--orange);font-family:'Nunito',sans-serif;
-  font-size:16px;font-weight:800;padding:5px 8px;text-align:center;outline:none;
-}
-.weight-input:focus{border-color:var(--orange);}
-.unit-toggle{display:flex;gap:4px;}
-.unit-btn{
-  background:transparent;border:1px solid var(--border);border-radius:8px;
-  color:var(--text3);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;
-  padding:4px 9px;cursor:pointer;transition:all 0.15s;
-}
-.unit-btn.active{background:var(--orange-dim);border-color:var(--orange);color:var(--orange);}
+    /* Ensure all buttons inherit the page font */
+    button, input, select, textarea {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
 
-/* Conditions */
-.cond-btns{display:flex;gap:5px;flex-wrap:wrap;}
-.cond-btn{
-  background:transparent;border:1px solid var(--border2);border-radius:10px;
-  color:var(--text3);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;
-  padding:5px 11px;cursor:pointer;transition:all 0.15s;white-space:nowrap;
-}
-.cond-btn:hover{border-color:var(--border2);color:var(--text2);}
-.cond-btn.active-cool  {background:rgba(79,195,247,0.12);border-color:#4fc3f7;color:#4fc3f7;}
-.cond-btn.active-normal{background:var(--orange-dim);border-color:var(--orange);color:var(--orange);}
-.cond-btn.active-hot   {background:rgba(255,82,82,0.12);border-color:#ff5252;color:#ff5252;}
-.cond-btn.active-rain  {background:rgba(90,180,240,0.12);border-color:#5ab4f0;color:#5ab4f0;}
+    html, body {
+      height: 100%;
+    }
 
-/* Duration selector */
-.dur-btns{display:flex;gap:5px;flex-wrap:wrap;}
-.dur-btn{
-  background:transparent;border:1px solid var(--border2);border-radius:10px;
-  color:var(--text3);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;
-  padding:5px 11px;cursor:pointer;transition:all 0.15s;white-space:nowrap;
-}
-.dur-btn.active{background:rgba(62,207,176,0.12);border-color:var(--teal);color:var(--teal);}
-.dur-btn:hover:not(.active){color:var(--text2);border-color:var(--border2);}
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #F0F7FF;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
 
-/* Condition banner */
-.cond-banner{padding:10px 2rem;font-size:13px;font-family:'Nunito Sans',sans-serif;display:none;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
-.cond-banner.visible{display:flex;}
-.cond-banner.hot-banner {background:rgba(255,82,82,0.07);color:#ff8080;border-bottom-color:rgba(255,82,82,0.18);}
-.cond-banner.cool-banner{background:rgba(79,195,247,0.07);color:#4fc3f7;border-bottom-color:rgba(79,195,247,0.18);}
-.cond-banner.rain-banner{background:rgba(90,180,240,0.07);color:#7ab8f0;border-bottom-color:rgba(90,180,240,0.18);}
-.cond-icon{font-size:18px;flex-shrink:0;}
+    /* ─── Phone shell ─── */
+    #app {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+    }
 
-/* Stats bar */
-.stats-bar{display:flex;gap:0;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
-.stats-bar::-webkit-scrollbar{display:none;}
-.stat-item{flex:1;min-width:120px;padding:0.9rem 1.25rem;border-right:1px solid var(--border);}
-.stat-item:last-child{border-right:none;}
-.stat-key{font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px;}
-.stat-val{font-family:'Nunito',sans-serif;font-size:1.25rem;font-weight:900;color:var(--orange);line-height:1;}
-.stat-val.hot-val{color:#ff5252;} .stat-val.teal-val{color:var(--teal);}
-.stat-unit{font-size:11px;font-weight:600;color:var(--text3);margin-top:2px;font-family:'Nunito Sans',sans-serif;}
+    /* ─── Page system ─── */
+    .page {
+      display: none;
+      width: 100%;
+    }
+    .page.active {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      animation: pgFade 0.2s ease;
+    }
+    @keyframes pgFade {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
 
-/* Duration info bar */
-.dur-bar{
-  display:flex;align-items:center;gap:12px;
-  padding:10px 2rem;border-bottom:1px solid var(--border);
-  background:rgba(62,207,176,0.04);font-size:13px;
-}
-.dur-pill{
-  display:inline-block;background:rgba(62,207,176,0.12);
-  border:1px solid rgba(62,207,176,0.25);color:var(--teal);
-  border-radius:20px;font-family:'Nunito',sans-serif;font-weight:700;
-  font-size:11px;padding:3px 10px;white-space:nowrap;
-}
-.dur-text{color:var(--text2);font-family:'Nunito Sans',sans-serif;}
-.dur-text em{color:var(--teal);font-style:normal;font-weight:600;}
+    /* ════════════════════════════════════
+       SHARED COMPONENTS
+    ════════════════════════════════════ */
 
-/* Day nav */
-.day-nav{display:flex;gap:6px;padding:1rem 2rem;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
-.day-nav::-webkit-scrollbar{display:none;}
-.day-btn{
-  flex-shrink:0;background:transparent;border:1px solid var(--border2);
-  border-radius:12px;color:var(--text2);
-  font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;
-  padding:7px 14px;cursor:pointer;transition:all 0.15s;white-space:nowrap;
-}
-.day-btn:hover{border-color:var(--border2);color:var(--text);}
-.day-btn.active{background:var(--orange);border-color:var(--orange);color:#fff;}
-.day-btn.race{border-color:var(--coral);color:var(--coral);}
-.day-btn.race.active{background:var(--coral);color:#fff;border-color:var(--coral);}
-.day-btn.kit-day{border-color:var(--gold);color:var(--gold);}
-.day-btn.kit-day.active{background:var(--gold);color:#1a0e00;border-color:var(--gold);}
+    /* Logo text */
+    .logo-sm { font-size: 21px; font-weight: 800; letter-spacing: -0.3px; line-height: 1; }
+    .logo-lg { font-size: 36px; font-weight: 800; letter-spacing: -0.6px; line-height: 1; }
+    .t-navy  { color: #1A3A5C; }
+    .t-blue  { color: #378ADD; }
 
-/* Main */
-.main{padding:1.5rem 2rem 4rem;}
-.day-title{font-family:'Nunito',sans-serif;font-size:1.5rem;font-weight:900;color:var(--text);margin-bottom:3px;}
-.day-subtitle{font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;}
-.day-note{
-  display:inline-block;margin-top:8px;
-  background:var(--orange-dim);border:1px solid rgba(255,122,47,0.22);
-  border-radius:10px;padding:6px 13px;font-size:12px;font-weight:600;
-  color:var(--orange3);font-family:'Nunito Sans',sans-serif;
-}
+    /* Top bar */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: #ffffff;
+      border-bottom: 0.5px solid #B5D4F4;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      flex-shrink: 0;
+    }
 
-/* Condition note */
-.cond-note-row{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;}
-.cond-note{display:inline-flex;align-items:center;gap:6px;border-radius:10px;padding:6px 12px;font-size:12px;font-weight:600;font-family:'Nunito Sans',sans-serif;}
-.cond-note.hot {background:rgba(255,82,82,0.1);border:1px solid rgba(255,82,82,0.22);color:#ff8080;}
-.cond-note.cool{background:rgba(79,195,247,0.1);border:1px solid rgba(79,195,247,0.22);color:#4fc3f7;}
-.cond-note.rain{background:rgba(90,180,240,0.1);border:1px solid rgba(90,180,240,0.22);color:#7ab8f0;}
+    /* Profile avatar */
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #378ADD;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffffff;
+      flex-shrink: 0;
+      letter-spacing: 0.3px;
+    }
 
-/* Table */
-.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r3);background:var(--bg2);margin-top:1rem;}
-table{width:100%;border-collapse:collapse;min-width:500px;}
-thead tr{background:var(--surface);border-bottom:1px solid var(--border2);}
-th{font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;padding:10px 15px;text-align:left;}
-td{padding:12px 15px;border-bottom:1px solid var(--border);vertical-align:top;font-size:13px;color:var(--text2);line-height:1.55;font-family:'Nunito Sans',sans-serif;}
-tr:last-child td{border-bottom:none;}
-tr:hover td{background:rgba(255,255,255,0.02);}
-.time-cell{font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;color:var(--text3);white-space:nowrap;min-width:72px;}
-.type-cell{min-width:82px;}
-.badge{display:inline-block;border-radius:8px;font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:0.03em;text-transform:uppercase;padding:3px 8px;font-weight:800;}
-.b-meal  {background:rgba(62,207,176,0.12);color:#3ecfb0;}
-.b-snack {background:rgba(240,192,64,0.12);color:#f0c040;}
-.b-water {background:rgba(90,180,240,0.12);color:#5ab4f0;}
-.b-pre   {background:rgba(255,122,47,0.12);color:#ff7a2f;}
-.b-during{background:rgba(255,82,82,0.12); color:#ff7070;}
-.b-post  {background:rgba(160,150,240,0.12);color:#a098f0;}
-.food-text{color:var(--text);font-family:'Nunito Sans',sans-serif;}
-.food-text em{color:var(--orange3);font-style:normal;font-weight:600;}
-.food-text small{color:var(--text3);font-size:11px;display:block;margin-top:2px;}
-.cond-inline{color:#ff8a6a;font-size:12px;display:block;margin-top:4px;padding:4px 10px;background:rgba(255,82,82,0.07);border-radius:8px;border-left:2px solid rgba(255,82,82,0.35);}
-.cond-inline.rain-inline{color:#7ab8f0;background:rgba(90,180,240,0.07);border-left-color:rgba(90,180,240,0.35);}
-.cond-inline.cool-inline{color:#4fc3f7;background:rgba(79,195,247,0.07);border-left-color:rgba(79,195,247,0.35);}
-.dur-inline{color:var(--teal);font-size:12px;display:block;margin-top:4px;padding:4px 10px;background:rgba(62,207,176,0.07);border-radius:8px;border-left:2px solid rgba(62,207,176,0.35);}
+    /* Primary button */
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      background: #378ADD;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      letter-spacing: 0.1px;
+      transition: opacity 0.15s;
+    }
+    .btn-primary:active { opacity: 0.80; }
 
-/* Hydration cards */
-.hydration-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:1rem;}
-.hydration-card{background:rgba(90,180,240,0.06);border:1px solid rgba(90,180,240,0.18);border-radius:var(--r2);padding:11px 14px;}
-.hydration-card.hot-card {background:rgba(255,82,82,0.06);border-color:rgba(255,82,82,0.22);}
-.hydration-card.rain-card{background:rgba(90,180,240,0.08);border-color:rgba(90,180,240,0.22);}
-.hkey{font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;color:#5ab4f0;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;}
-.hydration-card.hot-card  .hkey{color:#ff7070;}
-.hydration-card.rain-card .hkey{color:#7ab8f0;}
-.hval{font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:900;color:#5ab4f0;}
-.hydration-card.hot-card  .hval{color:#ff7070;}
-.hydration-card.rain-card .hval{color:#7ab8f0;}
-.carb-target{display:flex;align-items:center;gap:10px;margin-top:1rem;padding:10px 14px;background:var(--orange-dim);border:1px solid rgba(255,122,47,0.2);border-radius:var(--r2);font-size:13px;font-weight:600;color:var(--orange3);font-family:'Nunito Sans',sans-serif;}
-.carb-target strong{font-family:'Nunito',sans-serif;color:var(--orange);font-size:15px;font-weight:900;}
+    /* Secondary button */
+    .btn-secondary {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: #E6F1FB;
+      color: #378ADD;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-secondary:active { opacity: 0.75; }
 
-/* ── GEAR CHECKLIST ── */
-.kit-intro{margin-top:6px;font-size:13px;color:var(--text2);line-height:1.6;max-width:600px;font-family:'Nunito Sans',sans-serif;}
-.kit-progress-bar{height:4px;background:var(--surface2);border-radius:4px;margin-top:1rem;overflow:hidden;}
-.kit-progress-fill{height:100%;background:var(--orange);border-radius:4px;transition:width 0.3s ease;}
-.kit-progress-label{font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;color:var(--text3);margin-top:5px;}
-.kit-sections{display:flex;flex-direction:column;gap:1rem;margin-top:1.25rem;}
-.kit-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;}
-.kit-section-head{padding:11px 16px;background:var(--surface);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
-.kit-section-title{font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;color:var(--text);display:flex;align-items:center;gap:8px;}
-.kit-section-count{font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:var(--text3);}
-.kit-item{display:flex;align-items:flex-start;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.12s;}
-.kit-item:last-child{border-bottom:none;}
-.kit-item:hover{background:rgba(255,255,255,0.02);}
-.kit-item.checked{opacity:0.45;}
-.kit-checkbox{flex-shrink:0;width:19px;height:19px;margin-top:1px;border:1px solid var(--border2);border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;background:var(--bg3);}
-.kit-item.checked .kit-checkbox{background:var(--orange);border-color:var(--orange);}
-.kit-checkmark{display:none;color:#fff;font-size:11px;font-weight:900;font-family:'Nunito',sans-serif;}
-.kit-item.checked .kit-checkmark{display:block;}
-.kit-item-text{flex:1;}
-.kit-item-name{font-size:13px;font-weight:700;color:var(--text);font-family:'Nunito',sans-serif;}
-.kit-item.checked .kit-item-name{text-decoration:line-through;color:var(--text3);}
-.kit-item-detail{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.4;font-family:'Nunito Sans',sans-serif;}
-.kit-item-qty{font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;color:var(--orange);background:var(--orange-dim);border-radius:8px;padding:3px 8px;white-space:nowrap;flex-shrink:0;margin-top:2px;border:1px solid rgba(255,122,47,0.18);}
-.kit-item-qty.hot-qty {color:#ff7070;background:rgba(255,82,82,0.1);border-color:rgba(255,82,82,0.2);}
-.kit-item-qty.rain-qty{color:#7ab8f0;background:rgba(90,180,240,0.1);border-color:rgba(90,180,240,0.2);}
-.kit-item-qty.cool-qty{color:#4fc3f7;background:rgba(79,195,247,0.1);border-color:rgba(79,195,247,0.2);}
-.kit-item-qty.teal-qty{color:var(--teal);background:rgba(62,207,176,0.1);border-color:rgba(62,207,176,0.2);}
-.cond-kit-note{margin-top:1rem;padding:11px 15px;border-radius:var(--r2);font-size:12px;font-weight:600;line-height:1.6;font-family:'Nunito Sans',sans-serif;}
-.cond-kit-note.hot {background:rgba(255,82,82,0.08);border:1px solid rgba(255,82,82,0.2);color:#ff8080;}
-.cond-kit-note.rain{background:rgba(90,180,240,0.08);border:1px solid rgba(90,180,240,0.2);color:#7ab8f0;}
-.cond-kit-note.cool{background:rgba(79,195,247,0.08);border:1px solid rgba(79,195,247,0.2);color:#4fc3f7;}
-.kit-reset-btn{margin-top:1rem;background:transparent;border:1px solid var(--border2);border-radius:var(--r2);color:var(--text3);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer;transition:all 0.15s;}
-.kit-reset-btn:hover{border-color:var(--coral);color:var(--coral);}
-.section-divider{height:1px;background:var(--border);margin:2rem 0;}
+    /* Text input */
+    .input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 0.5px solid #B5D4F4;
+      border-radius: 10px;
+      font-size: 16px;
+      font-family: inherit;
+      color: #1A3A5C;
+      background: #ffffff;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .input::placeholder { color: #7AABCC; }
+    .input:focus        { border-color: #378ADD; }
 
-@media(max-width:640px){
-  /* Header */
-  .header{padding:1.25rem 1rem 1rem;}
-  .brand{font-size:1.7rem;}
-  .tagline{font-size:11px;}
+    /* Generic card */
+    .card {
+      background: #ffffff;
+      border: 0.5px solid #B5D4F4;
+      border-radius: 16px;
+      padding: 18px 16px;
+    }
 
-  /* Controls — stack vertically, full width */
-  .controls-row{flex-direction:column;align-items:stretch;gap:8px;margin-top:1rem;}
-  .ctrl-box{flex-direction:column;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:14px;}
-  .ctrl-label{font-size:10px;}
+    /* ─── Bottom navigation ─── */
+    #bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      border-top: 0.5px solid #B5D4F4;
+      display: flex;
+      z-index: 200;
+    }
+    #bottom-nav.hidden { display: none; }
 
-  /* Weight input row stays horizontal */
-  .ctrl-box:first-child{flex-direction:row;align-items:center;flex-wrap:wrap;}
-  .weight-input{font-size:18px;width:64px;}
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 4px 13px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: inherit;
+      transition: opacity 0.15s;
+    }
+    .nav-item:active { opacity: 0.55; }
+    .nav-item svg    { width: 24px; height: 24px; margin-bottom: 3px; display: block; }
+    .nav-item .lbl  { font-size: 10px; font-weight: 500; color: #7AABCC; }
+    .nav-item.active .lbl { color: #378ADD; }
 
-  /* Condition buttons — 2x2 grid */
-  .cond-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;width:100%;}
-  .cond-btn{text-align:center;padding:8px 6px;font-size:12px;border-radius:10px;}
+    /* Page scroll body */
+    .page-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 22px 20px 20px;
+      -webkit-overflow-scrolling: touch;
+    }
 
-  /* Duration buttons — 2x2 grid */
-  .dur-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;width:100%;}
-  .dur-btn{text-align:center;padding:8px 6px;font-size:12px;border-radius:10px;}
+    /* Sticky ad strip — sits between page-body and fixed nav */
+    .page-ad {
+      flex-shrink: 0;
+      border-top: 0.5px solid #B5D4F4;
+      padding: 12px 16px;
+      background: #ffffff;
+      margin-bottom: 66px; /* clears fixed nav (~62px) with room to spare */
+    }
 
-  /* Condition banner */
-  .cond-banner{padding:10px 1rem;font-size:12px;}
+    /* ════════════════════════════════════
+       PAGE 1 — LOGIN
+    ════════════════════════════════════ */
+    #page-login {
+      background: #E6F1FB;
+      align-items: center;
+      padding: 76px 28px 48px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
 
-  /* Stats bar — 2 per row */
-  .stats-bar{flex-wrap:wrap;}
-  .stat-item{min-width:50%;flex:0 0 50%;padding:0.75rem 1rem;}
-  .stat-val{font-size:1.1rem;}
-  .stat-unit{font-size:10px;}
+    .login-brand {
+      text-align: center;
+      width: 100%;
+      margin-bottom: 10px;
+    }
 
-  /* Duration info bar */
-  .dur-bar{padding:8px 1rem;flex-wrap:wrap;gap:6px;font-size:12px;}
-  .dur-pill{font-size:11px;}
-  .dur-text{font-size:12px;line-height:1.5;}
+    .login-tagline {
+      text-align: center;
+      font-size: 15px;
+      font-weight: 400;
+      color: #7AABCC;
+      width: 100%;
+      margin-bottom: 44px;
+      letter-spacing: 0.1px;
+    }
 
-  /* Day nav — larger tap targets */
-  .day-nav{padding:0.75rem 1rem;gap:6px;}
-  .day-btn{padding:9px 12px;font-size:12px;border-radius:12px;}
+    .login-card {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 20px;
+      border: 0.5px solid #B5D4F4;
+      box-shadow:
+        0 10px 48px rgba(55, 138, 221, 0.13),
+        0 2px  10px rgba(55, 138, 221, 0.06);
+      padding: 28px 22px 26px;
+    }
 
-  /* Main content */
-  .main{padding:1rem 1rem 4rem;}
-  .day-title{font-size:1.2rem;}
-  .day-subtitle{font-size:11px;}
-  .day-note{font-size:12px;padding:6px 10px;}
+    .login-card .input      { margin-bottom: 14px; }
+    .login-card .input:last-of-type { margin-bottom: 0; }
 
-  /* Table — more readable on small screens */
-  .table-wrap{border-radius:14px;}
-  table{min-width:0;width:100%;}
-  th{font-size:9px;padding:8px 10px;}
-  td{padding:10px 10px;font-size:13px;}
-  .time-cell{font-size:11px;min-width:62px;}
-  .badge{font-size:9px;padding:2px 6px;}
+    .login-card .btn-primary { margin-top: 20px; }
 
-  /* Hydration cards — 1 per row on very small, 2 on medium */
-  .hydration-row{grid-template-columns:1fr 1fr;}
-  .hval{font-size:0.95rem;}
-  .hkey{font-size:9px;}
+    .login-footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 14px;
+      color: #7AABCC;
+    }
+    .link-btn {
+      color: #378ADD;
+      font-weight: 600;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: inherit;
+      padding: 0;
+    }
 
-  /* Carb target */
-  .carb-target{font-size:12px;padding:8px 12px;}
-  .carb-target strong{font-size:14px;}
+    /* ════════════════════════════════════
+       PAGE — SIGN UP
+    ════════════════════════════════════ */
+    #page-signup {
+      background: #E6F1FB;
+      align-items: center;
+      padding: 52px 28px 48px;
+      overflow-y: auto;
+    }
 
-  /* Kit checklist */
-  .kit-section-head{padding:10px 12px;}
-  .kit-section-title{font-size:12px;}
-  .kit-item{padding:10px 12px;gap:10px;}
-  .kit-item-name{font-size:13px;}
-  .kit-item-detail{font-size:11px;}
-  .kit-item-qty{font-size:10px;padding:2px 7px;}
-  .kit-checkbox{width:20px;height:20px;}
-  .kit-progress-label{font-size:11px;}
-  .cond-kit-note{font-size:12px;padding:10px 12px;}
-  .kit-intro{font-size:13px;}
-  .kit-reset-btn{font-size:12px;padding:9px 16px;width:100%;text-align:center;}
+    .signup-card {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 16px;
+      border: 0.5px solid #B5D4F4;
+      box-shadow:
+        0 10px 48px rgba(55, 138, 221, 0.13),
+        0 2px  10px rgba(55, 138, 221, 0.06);
+      padding: 26px 22px 26px;
+    }
 
-  /* Condition notes */
-  .cond-note{font-size:12px;padding:6px 10px;}
-  .cond-inline{font-size:12px;}
-  .dur-inline{font-size:12px;}
-}
-</style>
+    .su-field {
+      margin-bottom: 14px;
+    }
+
+    .su-input,
+    .su-select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 0.5px solid #B5D4F4;
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      color: #1A3A5C;
+      background: #ffffff;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+      display: block;
+    }
+    .su-input::placeholder { color: #7AABCC; }
+    .su-input:focus,
+    .su-select:focus { border-color: #378ADD; }
+
+    /* Muted color until user picks a grade */
+    .su-select          { color: #7AABCC; cursor: pointer; }
+    .su-select.chosen   { color: #1A3A5C; }
+
+    /* Custom chevron on the select */
+    .su-select-wrap {
+      position: relative;
+    }
+    .su-select-wrap::after {
+      content: '';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 6px solid #7AABCC;
+      pointer-events: none;
+    }
+
+    .signup-card .btn-primary { margin-top: 22px; }
+
+    /* ════════════════════════════════════
+       PAGE — HOME
+    ════════════════════════════════════ */
+    #page-home { background: #ffffff; }
+
+    /* Greeting */
+    .home-greeting        { margin-bottom: 22px; }
+    .home-greeting h1     { font-size: 20px; font-weight: 500; color: #1A3A5C; margin-bottom: 4px; }
+    .home-greeting .date  { font-size: 13px; color: #7AABCC; }
+
+    /* Section title used throughout home */
+    .sec-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: #1A3A5C;
+      margin-bottom: 12px;
+    }
+
+    /* ── Stat cards 2×2 grid ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: #ffffff;
+      border: 0.5px solid #B5D4F4;
+      border-radius: 12px;
+      padding: 14px 12px 12px;
+    }
+    .stat-lbl {
+      font-size: 11px;
+      font-weight: 500;
+      color: #7AABCC;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .stat-val {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1A3A5C;
+      line-height: 1;
+    }
+    .stat-val.blue { color: #378ADD; }
+
+    /* ── Schedule cards ── */
+    .schedule-card {
+      background: #ffffff;
+      border: 0.5px solid #B5D4F4;
+      border-left: 3.5px solid #B5D4F4;
+      border-radius: 12px;
+      padding: 13px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .sched-info       { flex: 1; min-width: 0; }
+    .sched-class      { font-size: 14px; font-weight: 700; color: #1A3A5C; margin-bottom: 3px; }
+    .sched-meta       { font-size: 12px; color: #7AABCC; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sched-time       { font-size: 12px; font-weight: 600; color: #1A3A5C; white-space: nowrap; margin-left: 12px; flex-shrink: 0; }
+
+    /* ── Study group cards ── */
+    .sg-card {
+      background: #ffffff;
+      border: 0.5px solid #B5D4F4;
+      border-radius: 12px;
+      padding: 13px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .sg-info   { flex: 1; min-width: 0; }
+    .sg-name   { font-size: 14px; font-weight: 600; color: #1A3A5C; margin-bottom: 3px; }
+    .sg-meta   { font-size: 12px; color: #7AABCC; }
+    .btn-view  {
+      background: #E6F1FB;
+      color: #378ADD;
+      border: none;
+      border-radius: 10px;
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-left: 12px;
+      transition: opacity 0.15s;
+    }
+    .btn-view:active { opacity: 0.70; }
+
+    /* ── Ad strip ── */
+    .ad-card {
+      background: #ffffff;
+      border: 0.5px solid #B5D4F4;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .ad-img {
+      width: 60px;
+      height: 60px;
+      min-width: 60px;
+      background: #E6F1FB;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: #7AABCC;
+      letter-spacing: 0.3px;
+    }
+    .ad-info        { flex: 1; min-width: 0; }
+    .ad-name        { font-size: 13px; font-weight: 500; color: #1A3A5C; margin-bottom: 3px; }
+    .ad-price       { font-size: 12px; font-weight: 600; color: #378ADD; margin-bottom: 3px; }
+    .ad-sponsor     { font-size: 10px; color: #7AABCC; }
+
+    /* ════════════════════════════════════
+       PAGE — SCHEDULE
+    ════════════════════════════════════ */
+    #page-schedule { background: #ffffff; }
+
+    .sched-pg-title { font-size: 20px; font-weight: 500; color: #1A3A5C; margin-bottom: 4px; }
+    .sched-pg-sub   { font-size: 13px; color: #7AABCC; margin-bottom: 24px; }
+
+    /* Category sections */
+    .cat-section { margin-bottom: 22px; }
+    .cat-header  {
+      font-size: 13px;
+      font-weight: 500;
+      color: #378ADD;
+      letter-spacing: 0.4px;
+      padding-bottom: 8px;
+      border-bottom: 0.5px solid #B5D4F4;
+      margin-bottom: 9px;
+    }
+
+    /* Class rows */
+    .class-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #ffffff;
+      border: 0.5px solid #B5D4F4;
+      border-radius: 10px;
+      padding: 11px 12px 11px 14px;
+      margin-bottom: 7px;
+    }
+    .class-row:last-child { margin-bottom: 0; }
+    .class-nm { font-size: 14px; color: #1A3A5C; }
+
+    /* Add / Added button */
+    .add-btn {
+      background: #E6F1FB;
+      color: #378ADD;
+      border: none;
+      border-radius: 10px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-left: 10px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .add-btn:active { opacity: 0.70; }
+    .add-btn.added  { background: #4CAF50; color: #ffffff; }
+
+    /* My Schedule section */
+    .my-sched-wrap {
+      border-top: 0.5px solid #B5D4F4;
+      padding-top: 20px;
+      margin-top: 4px;
+      margin-bottom: 22px;
+    }
+    .my-sched-ttl {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1A3A5C;
+      margin-bottom: 12px;
+    }
+    .my-sched-empty {
+      font-size: 13px;
+      color: #7AABCC;
+      text-align: center;
+      padding: 22px 0 10px;
+      line-height: 1.65;
+    }
+    .sched-item {
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      border: 0.5px solid #B5D4F4;
+      border-radius: 10px;
+      padding: 12px 10px 12px 14px;
+      margin-bottom: 8px;
+    }
+    .sched-item-info { flex: 1; min-width: 0; }
+    .sched-item-nm   { font-size: 14px; font-weight: 600; color: #1A3A5C; margin-bottom: 2px; }
+    .sched-item-cat  { font-size: 11px; color: #7AABCC; text-transform: uppercase; letter-spacing: 0.4px; }
+    .rm-btn {
+      background: none;
+      border: none;
+      color: #F44336;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px 6px;
+      flex-shrink: 0;
+      margin-left: 6px;
+      transition: opacity 0.15s;
+    }
+    .rm-btn:active { opacity: 0.55; }
+
+    /* ════════════════════════════════════
+       PAGE — STUDY GROUPS
+    ════════════════════════════════════ */
+    #page-study { background: #ffffff; }
+
+    .study-pg-ttl { font-size: 20px; font-weight: 500; color: #1A3A5C; margin-bottom: 4px; }
+    .study-pg-sub { font-size: 13px; color: #7AABCC; margin-bottom: 18px; }
+
+    /* Filter pills */
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 22px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .filter-pill {
+      flex-shrink: 0;
+      padding: 7px 16px;
+      border-radius: 20px;
+      background: #E6F1FB;
+      color: #378ADD;
+      border: none;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .filter-pill:active { opacity: 0.75; }
+    .filter-pill.active { background: #378ADD; color: #ffffff; }
+
+    /* Open group cards */
+    .sg-open-card {
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      border: 0.5px solid #B5D4F4;
+      border-radius: 12px;
+      padding: 14px 12px 14px 14px;
+      margin-bottom: 10px;
+    }
+    .sgo-info    { flex: 1; min-width: 0; }
+    .sgo-name    { font-size: 15px; font-weight: 500; color: #1A3A5C; margin-bottom: 4px; }
+    .sgo-meta    { font-size: 12px; color: #7AABCC; line-height: 1.5; }
+
+    /* Join button */
+    .join-btn {
+      background: #378ADD;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-left: 12px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .join-btn:active { opacity: 0.80; }
+    .join-btn.joined { background: #4CAF50; color: #ffffff; }
+
+    /* My Groups section */
+    .my-grps-wrap { margin-top: 8px; margin-bottom: 20px; }
+    .stg-empty    { font-size: 13px; color: #7AABCC; padding: 8px 0 12px; }
+
+    .my-grp-card {
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      border: 0.5px solid #B5D4F4;
+      border-radius: 10px;
+      padding: 12px 10px 12px 14px;
+      margin-bottom: 8px;
+    }
+    .my-grp-info { flex: 1; min-width: 0; }
+    .my-grp-nm   { font-size: 14px; font-weight: 600; color: #1A3A5C; margin-bottom: 2px; }
+    .my-grp-time { font-size: 12px; color: #7AABCC; }
+    .leave-btn {
+      background: #F44336;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-left: 10px;
+      transition: opacity 0.15s;
+    }
+    .leave-btn:active { opacity: 0.65; }
+
+    /* Create a group */
+    .create-grp-btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: #E6F1FB;
+      color: #378ADD;
+      border: 0.5px solid #B5D4F4;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      text-align: center;
+      margin-bottom: 12px;
+      transition: background 0.15s;
+    }
+    .create-grp-btn:active { background: #E6F1FB; }
+
+    .create-form {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height 0.28s ease, opacity 0.2s ease, padding 0.25s ease, margin-bottom 0.25s ease;
+      padding: 0 16px;
+      margin-bottom: 0;
+      background: #E6F1FB;
+      border: 0.5px solid transparent;
+      border-radius: 12px;
+    }
+    .create-form.open {
+      max-height: 600px;
+      opacity: 1;
+      padding: 18px 16px;
+      margin-bottom: 16px;
+      border-color: #B5D4F4;
+    }
+    .form-grp { margin-bottom: 14px; }
+    .form-lbl {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #7AABCC;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .create-form .su-input  { background: #ffffff; }
+    .create-form .su-select { background: #ffffff; }
+
+    /* ════════════════════════════════════
+       PAGE — TUTORS
+    ════════════════════════════════════ */
+    #page-tutors { background: #ffffff; }
+
+    .tutor-pg-ttl { font-size: 20px; font-weight: 500; color: #1A3A5C; margin-bottom: 4px; }
+    .tutor-pg-sub { font-size: 13px; color: #7AABCC; margin-bottom: 18px; }
+
+    /* Search bar */
+    .search-wrap { position: relative; margin-bottom: 20px; }
+    .search-wrap .search-icon {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      width: 16px; height: 16px; fill: #7AABCC; pointer-events: none;
+    }
+    .search-input {
+      width: 100%; padding: 11px 14px 11px 38px;
+      border: 0.5px solid #B5D4F4; border-radius: 10px;
+      font-size: 14px; font-family: inherit; color: #1A3A5C;
+      background: #ffffff; outline: none;
+      transition: border-color 0.2s; -webkit-appearance: none; appearance: none;
+    }
+    .search-input::placeholder { color: #7AABCC; }
+    .search-input:focus        { border-color: #378ADD; }
+
+    /* Tutor cards */
+    .tutor-card {
+      display: flex; align-items: center; background: #ffffff;
+      border: 0.5px solid #B5D4F4; border-radius: 12px;
+      padding: 14px 12px 14px 14px; margin-bottom: 12px; gap: 12px;
+    }
+    .tutor-av {
+      width: 44px; height: 44px; min-width: 44px; border-radius: 50%;
+      background: #378ADD; color: #ffffff; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; letter-spacing: 0.3px; flex-shrink: 0;
+    }
+    .tutor-info { flex: 1; min-width: 0; }
+    .tutor-nm   { font-size: 15px; font-weight: 500; color: #1A3A5C; margin-bottom: 3px; }
+    .tutor-subj { font-size: 12px; color: #7AABCC; margin-bottom: 5px; }
+    .tutor-stars { font-size: 15px; line-height: 1; }
+    .star-f { color: #378ADD; }
+    .star-e { color: #B5D4F4; }
+
+    .interest-btn {
+      background: #378ADD; color: #ffffff; border: none;
+      border-radius: 10px; padding: 8px 12px; font-size: 12px;
+      font-weight: 600; font-family: inherit; cursor: pointer;
+      white-space: nowrap; line-height: 1.35; flex-shrink: 0;
+      transition: opacity 0.15s; text-align: center;
+    }
+    .interest-btn:active { opacity: 0.80; }
+    .no-results { font-size: 13px; color: #7AABCC; padding: 24px 0; text-align: center; }
+
+    /* Sliding viewport that holds list + chat panels */
+    .tutors-viewport {
+      flex: 1; position: relative; overflow: hidden; min-height: 0;
+    }
+    .tutors-panel {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      transition: transform 0.28s ease; background: #ffffff; will-change: transform;
+    }
+    #tutors-list-view {
+      transform: translateX(0); overflow-y: auto;
+      -webkit-overflow-scrolling: touch; padding: 22px 20px 80px;
+    }
+    #tutors-chat-view {
+      transform: translateX(100%); display: flex;
+      flex-direction: column; overflow: hidden;
+    }
+    .chat-panel-in  { transform: translateX(0)     !important; }
+    .chat-panel-out { transform: translateX(-100%)  !important; }
+
+    /* Chat header */
+    .chat-header {
+      display: flex; align-items: center; gap: 0;
+      padding: 12px 16px; border-bottom: 0.5px solid #B5D4F4;
+      flex-shrink: 0; background: #ffffff;
+    }
+    .back-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: #E6F1FB; border: none; display: flex;
+      align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0; transition: opacity 0.15s;
+    }
+    .back-btn:active { opacity: 0.65; }
+    .chat-tutor-ctr {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+    }
+    .chat-tutor-av {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: #378ADD; color: #ffffff; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+    }
+    .chat-tutor-nm  { font-size: 13px; font-weight: 600; color: #1A3A5C; }
+    .chat-hdr-space { width: 34px; flex-shrink: 0; }
+
+    /* Chat messages */
+    .chat-msgs {
+      flex: 1; overflow-y: auto; padding: 16px;
+      -webkit-overflow-scrolling: touch; min-height: 0;
+    }
+    .msg-row        { display: flex; margin-bottom: 8px; }
+    .msg-row.sent   { justify-content: flex-end; }
+    .msg-row.recv   { justify-content: flex-start; }
+    .msg-bubble {
+      max-width: 75%; padding: 10px 14px; border-radius: 12px;
+      font-size: 14px; line-height: 1.45; word-wrap: break-word;
+    }
+    .msg-bubble.sent { background: #378ADD; color: #ffffff; border-bottom-right-radius: 4px; }
+    .msg-bubble.recv { background: #E6F1FB; color: #1A3A5C; border-bottom-left-radius: 4px; }
+
+    /* Typing indicator */
+    .typing-row  { display: flex; margin-bottom: 8px; }
+    .typing-pill { display: flex; align-items: center; gap: 4px; background: #E6F1FB;
+                   border-radius: 12px; border-bottom-left-radius: 4px; padding: 10px 14px; }
+    .typing-dot  {
+      width: 6px; height: 6px; border-radius: 50%; background: #7AABCC;
+      animation: tBounce 1s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.30s; }
+    @keyframes tBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30%            { transform: translateY(-5px); }
+    }
+
+    /* Chat input bar */
+    .chat-input-bar {
+      background: #ffffff; border-top: 0.5px solid #B5D4F4;
+      padding: 10px 14px 70px; /* 70px clears fixed nav */
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    }
+    .chat-txt {
+      flex: 1; padding: 10px 14px; border: 1px solid #B5D4F4;
+      border-radius: 20px; font-size: 14px; font-family: inherit;
+      color: #1A3A5C; background: #ffffff; outline: none;
+      transition: border-color 0.2s; -webkit-appearance: none;
+    }
+    .chat-txt::placeholder { color: #7AABCC; }
+    .chat-txt:focus        { border-color: #378ADD; }
+    .send-btn {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: #378ADD; border: none; display: flex;
+      align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0; transition: opacity 0.15s;
+    }
+    .send-btn:active { opacity: 0.80; }
+
+    /* ════════════════════════════════════
+       EVENTS PAGE
+    ════════════════════════════════════ */
+    .events-pg-ttl {
+      font-size: 20px; font-weight: 700; color: #1A3A5C; margin-bottom: 16px;
+    }
+    .match-banner {
+      background: #E6F1FB; border: 0.5px solid #B5D4F4; border-radius: 12px;
+      padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    }
+    .match-banner-icon { font-size: 22px; flex-shrink: 0; }
+    .match-banner-text { font-size: 14px; color: #1A3A5C; font-weight: 500; line-height: 1.4; }
+    .dance-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;
+    }
+    .dance-card {
+      background: #E6F1FB; border: 0.5px solid #B5D4F4; border-radius: 12px;
+      padding: 18px 14px; display: flex; flex-direction: column;
+      align-items: center; gap: 6px; cursor: pointer;
+    }
+    .dance-card-icon { font-size: 26px; }
+    .dance-card-name { font-size: 14px; font-weight: 700; color: #1A3A5C; }
+    .dance-card-date { font-size: 12px; color: #7AABCC; }
+    .sec-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .sec-title-row .sec-title { margin-bottom: 0; }
+    .evt-badge {
+      background: #378ADD; color: #fff; font-size: 11px; font-weight: 700;
+      border-radius: 99px; padding: 2px 7px; min-width: 20px; text-align: center;
+    }
+    .req-card {
+      background: #fff; border: 0.5px solid #B5D4F4; border-radius: 12px;
+      padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+      margin-bottom: 10px; transition: background 0.25s, opacity 0.3s;
+    }
+    .req-av {
+      width: 40px; height: 40px; border-radius: 50%; background: #B5D4F4;
+      color: #1A3A5C; font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .req-info { flex: 1; }
+    .req-name { font-size: 14px; font-weight: 700; color: #1A3A5C; }
+    .req-dance-pill {
+      display: inline-block; background: #E6F1FB; border: 0.5px solid #B5D4F4;
+      border-radius: 99px; font-size: 11px; color: #378ADD;
+      padding: 2px 8px; margin-top: 3px; font-weight: 600;
+    }
+    .req-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .accept-btn {
+      background: #378ADD; color: #ffffff; border: none;
+      border-radius: 10px; font-size: 13px; font-weight: 600;
+      padding: 6px 13px; cursor: pointer; transition: opacity 0.15s;
+    }
+    .accept-btn:active { opacity: 0.8; }
+    .decline-btn {
+      background: #F44336; color: #ffffff; border: none;
+      border-radius: 10px; font-size: 13px; font-weight: 600;
+      padding: 6px 13px; cursor: pointer; transition: opacity 0.15s;
+    }
+    .decline-btn:active { opacity: 0.8; }
+    .match-item {
+      background: #E6F1FB; border: 0.5px solid #B5D4F4; border-radius: 12px;
+      padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+    }
+    .match-av {
+      width: 40px; height: 40px; border-radius: 50%; background: #378ADD;
+      color: #fff; font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .match-info { flex: 1; }
+    .match-name { font-size: 14px; font-weight: 700; color: #1A3A5C; }
+    .match-event { font-size: 12px; color: #7AABCC; margin-top: 2px; }
+    .privacy-note {
+      font-size: 12px; color: #7AABCC; text-align: center;
+      margin-top: -8px; margin-bottom: 14px; padding: 0 8px;
+    }
+    .evt-empty-note { font-size: 14px; color: #7AABCC; text-align: center; padding: 12px 0; }
+    .student-card {
+      background: #fff; border: 0.5px solid #B5D4F4; border-radius: 12px;
+      padding: 12px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+    }
+    .student-av {
+      width: 38px; height: 38px; border-radius: 50%; background: #E6F1FB;
+      color: #378ADD; font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .student-info { flex: 1; }
+    .student-name { font-size: 14px; font-weight: 700; color: #1A3A5C; }
+    .student-grade { font-size: 12px; color: #7AABCC; }
+    .add-list-btn {
+      background: #E6F1FB; color: #378ADD; border: 0.5px solid #B5D4F4;
+      border-radius: 10px; font-size: 13px; font-weight: 600;
+      padding: 6px 13px; cursor: pointer; white-space: nowrap;
+      transition: color 0.2s;
+    }
+    .add-list-btn.added { background: #4CAF50; color: #ffffff; border-color: #4CAF50; cursor: default; }
+
+    /* ════════════════════════════════════
+       STUB PAGES (schedule / study / tutors / events)
+    ════════════════════════════════════ */
+    .stub-page { background: #ffffff; }
+
+    .stub-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px 100px;
+      gap: 14px;
+    }
+    .stub-icon {
+      width: 56px;
+      height: 56px;
+      fill: #B5D4F4;
+    }
+    .stub-body p {
+      font-size: 15px;
+      color: #7AABCC;
+    }
+  </style>
 </head>
 <body>
+<div id="app">
 
-<header class="header">
-  <div class="brand">XC Race Prep<span class="brand-dot"> ·</span> Fuel</div>
-  <div class="tagline">7-day nutrition &amp; hydration planner</div>
+  <!-- ══════════════════════════════
+       PAGE 1 — LOGIN
+  ══════════════════════════════ -->
+  <div id="page-login" class="page active" style="display:flex;">
 
-  <div class="controls-row">
-    <div class="ctrl-box">
-      <span class="ctrl-label">Weight</span>
-      <input class="weight-input" type="number" id="weightInput" value="70" min="30" max="200"/>
-      <div class="unit-toggle">
-        <button class="unit-btn active" id="btnKg" onclick="setUnit('kg')">kg</button>
-        <button class="unit-btn" id="btnLb" onclick="setUnit('lb')">lb</button>
+    <div class="login-brand">
+      <div class="logo-lg">
+        <span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span>
       </div>
     </div>
 
-    <div class="ctrl-box">
-      <span class="ctrl-label">Conditions</span>
-      <div class="cond-btns">
-        <button class="cond-btn" id="cond-cool"   onclick="setCond('cool')">❄ Cool</button>
-        <button class="cond-btn active-normal" id="cond-normal" onclick="setCond('normal')">☀ Normal</button>
-        <button class="cond-btn" id="cond-hot"    onclick="setCond('hot')">🔥 Hot</button>
-        <button class="cond-btn" id="cond-rain"   onclick="setCond('rain')">🌧 Rainy</button>
+    <p class="login-tagline">Your school life, organized.</p>
+
+    <div class="login-card">
+      <input class="input" type="email"    placeholder="School email" autocomplete="off">
+      <input class="input" type="password" placeholder="Password"     autocomplete="off">
+      <button class="btn-primary" onclick="nav('home')">Log in</button>
+    </div>
+
+    <p class="login-footer">
+      Don't have an account?&nbsp;
+      <button class="link-btn" onclick="nav('signup')">Sign up</button>
+    </p>
+
+  </div>
+
+
+  <!-- ══════════════════════════════
+       PAGE 2 — SIGN UP
+  ══════════════════════════════ -->
+  <div id="page-signup" class="page" style="display:none;">
+
+    <div class="login-brand">
+      <div class="logo-lg">
+        <span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span>
       </div>
     </div>
 
-    <div class="ctrl-box">
-      <span class="ctrl-label">Race duration</span>
-      <div class="dur-btns">
-        <button class="dur-btn active" id="dur-sprint" onclick="setDur('sprint')">Under 45 min</button>
-        <button class="dur-btn" id="dur-short"  onclick="setDur('short')">45–75 min</button>
-        <button class="dur-btn" id="dur-medium" onclick="setDur('medium')">75–120 min</button>
-        <button class="dur-btn" id="dur-long"   onclick="setDur('long')">2+ hrs</button>
+    <p class="login-tagline">Your school life, organized.</p>
+
+    <div class="signup-card">
+
+      <div class="su-field">
+        <input class="su-input" type="text" placeholder="First name" autocomplete="off">
+      </div>
+
+      <div class="su-field">
+        <input class="su-input" type="text" placeholder="Last name" autocomplete="off">
+      </div>
+
+      <div class="su-field">
+        <input class="su-input" type="email" placeholder="School email" autocomplete="off">
+      </div>
+
+      <div class="su-field">
+        <input class="su-input" type="password" placeholder="Create a password" autocomplete="off">
+      </div>
+
+      <div class="su-field" style="margin-bottom:0;">
+        <div class="su-select-wrap">
+          <select class="su-select" id="grade-select">
+            <option value="">Select your grade</option>
+            <option value="9">9th Grade</option>
+            <option value="10">10th Grade</option>
+            <option value="11">11th Grade</option>
+            <option value="12">12th Grade</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="nav('home')">Create account</button>
+
+    </div>
+
+    <p class="login-footer">
+      Already have an account?&nbsp;
+      <button class="link-btn" onclick="nav('login')">Log in</button>
+    </p>
+
+  </div>
+
+
+  <!-- ══════════════════════════════
+       HOME
+  ══════════════════════════════ -->
+  <!-- ══════════════════════════════
+       PAGE 3 — HOME
+  ══════════════════════════════ -->
+  <div id="page-home" class="page" style="display:none;">
+
+    <div class="top-bar">
+      <div class="logo-sm" onclick="nav('home')" style="cursor:pointer;"><span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span></div>
+      <div class="avatar">JL</div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- Greeting -->
+      <div class="home-greeting">
+        <h1>Good morning, Jamie 👋</h1>
+        <p class="date">Thursday, May 28</p>
+      </div>
+
+      <!-- Stat cards 2×2 -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-lbl">Classes today</div>
+          <div class="stat-val">5</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Study groups</div>
+          <div class="stat-val blue">2</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Tutor sessions</div>
+          <div class="stat-val">1</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Days to Prom</div>
+          <div class="stat-val blue">18</div>
+        </div>
+      </div>
+
+      <!-- Today's schedule -->
+      <p class="sec-title">Today's schedule</p>
+
+      <div class="schedule-card">
+        <div class="sched-info">
+          <div class="sched-class">AP Calculus BC</div>
+          <div class="sched-meta">Mr. Henderson &middot; Room 204</div>
+        </div>
+        <div class="sched-time">8:15 AM</div>
+      </div>
+
+      <div class="schedule-card">
+        <div class="sched-info">
+          <div class="sched-class">Orchestra</div>
+          <div class="sched-meta">Ms. Park &middot; Music Hall</div>
+        </div>
+        <div class="sched-time">10:30 AM</div>
+      </div>
+
+      <div class="schedule-card" style="margin-bottom:28px;">
+        <div class="sched-info">
+          <div class="sched-class">AP US History</div>
+          <div class="sched-meta">Mrs. Torres &middot; Room 118</div>
+        </div>
+        <div class="sched-time">1:00 PM</div>
+      </div>
+
+      <!-- Upcoming study groups -->
+      <p class="sec-title">Upcoming study groups</p>
+
+      <div class="sg-card">
+        <div class="sg-info">
+          <div class="sg-name">AP Calc Review</div>
+          <div class="sg-meta">3 members &middot; Saturday 2:00 PM</div>
+        </div>
+        <button class="btn-view" onclick="nav('study')">View</button>
+      </div>
+
+      <div class="sg-card" style="margin-bottom:28px;">
+        <div class="sg-info">
+          <div class="sg-name">Chemistry Lab Prep</div>
+          <div class="sg-meta">2 members &middot; Sunday 4:00 PM</div>
+        </div>
+        <button class="btn-view" onclick="nav('study')">View</button>
+      </div>
+
+    </div><!-- /.page-body -->
+    <div class="page-ad">
+      <div class="ad-card">
+        <div class="ad-img">img</div>
+        <div class="ad-info">
+          <div class="ad-name">Five Star Notebook Set</div>
+          <div class="ad-price">$12.99 at Target</div>
+          <div class="ad-sponsor">Sponsored &middot; school supplies</div>
+        </div>
       </div>
     </div>
   </div>
-</header>
 
-<div class="cond-banner" id="condBanner">
-  <span class="cond-icon" id="condBannerIcon"></span>
-  <span id="condBannerText"></span>
-</div>
 
-<div class="stats-bar" id="statsBar"></div>
-<div class="dur-bar" id="durBar"></div>
-<nav class="day-nav" id="dayNav"></nav>
-<main class="main" id="mainContent"></main>
+  <!-- ══════════════════════════════
+       PAGE 4 — SCHEDULE
+  ══════════════════════════════ -->
+  <div id="page-schedule" class="page" style="display:none;">
+    <div class="top-bar">
+      <div class="logo-sm" onclick="nav('home')" style="cursor:pointer;"><span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span></div>
+      <div class="avatar">JL</div>
+    </div>
+
+    <div class="page-body">
+
+      <h2 class="sched-pg-title">My Schedule</h2>
+      <p class="sched-pg-sub">Tap classes to add them to your schedule</p>
+
+      <!-- ── MATH ── -->
+      <div class="cat-section">
+        <div class="cat-header">MATH</div>
+        <div class="class-row"><span class="class-nm">Algebra 1</span><button class="add-btn" data-name="Algebra 1" onclick="toggleSchedClass(this,'Algebra 1','MATH')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Algebra 2</span><button class="add-btn" data-name="Algebra 2" onclick="toggleSchedClass(this,'Algebra 2','MATH')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Geometry</span><button class="add-btn" data-name="Geometry" onclick="toggleSchedClass(this,'Geometry','MATH')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Pre-Calculus</span><button class="add-btn" data-name="Pre-Calculus" onclick="toggleSchedClass(this,'Pre-Calculus','MATH')">Add</button></div>
+        <div class="class-row"><span class="class-nm">AP Calculus BC</span><button class="add-btn" data-name="AP Calculus BC" onclick="toggleSchedClass(this,'AP Calculus BC','MATH')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Statistics</span><button class="add-btn" data-name="Statistics" onclick="toggleSchedClass(this,'Statistics','MATH')">Add</button></div>
+      </div>
+
+      <!-- ── SCIENCE ── -->
+      <div class="cat-section">
+        <div class="cat-header">SCIENCE</div>
+        <div class="class-row"><span class="class-nm">Biology</span><button class="add-btn" data-name="Biology" onclick="toggleSchedClass(this,'Biology','SCIENCE')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Chemistry</span><button class="add-btn" data-name="Chemistry" onclick="toggleSchedClass(this,'Chemistry','SCIENCE')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Physics</span><button class="add-btn" data-name="Physics" onclick="toggleSchedClass(this,'Physics','SCIENCE')">Add</button></div>
+        <div class="class-row"><span class="class-nm">AP Biology</span><button class="add-btn" data-name="AP Biology" onclick="toggleSchedClass(this,'AP Biology','SCIENCE')">Add</button></div>
+        <div class="class-row"><span class="class-nm">AP Chemistry</span><button class="add-btn" data-name="AP Chemistry" onclick="toggleSchedClass(this,'AP Chemistry','SCIENCE')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Environmental Science</span><button class="add-btn" data-name="Environmental Science" onclick="toggleSchedClass(this,'Environmental Science','SCIENCE')">Add</button></div>
+      </div>
+
+      <!-- ── ENGLISH ── -->
+      <div class="cat-section">
+        <div class="cat-header">ENGLISH</div>
+        <div class="class-row"><span class="class-nm">English 9</span><button class="add-btn" data-name="English 9" onclick="toggleSchedClass(this,'English 9','ENGLISH')">Add</button></div>
+        <div class="class-row"><span class="class-nm">English 10</span><button class="add-btn" data-name="English 10" onclick="toggleSchedClass(this,'English 10','ENGLISH')">Add</button></div>
+        <div class="class-row"><span class="class-nm">English 11</span><button class="add-btn" data-name="English 11" onclick="toggleSchedClass(this,'English 11','ENGLISH')">Add</button></div>
+        <div class="class-row"><span class="class-nm">English 12</span><button class="add-btn" data-name="English 12" onclick="toggleSchedClass(this,'English 12','ENGLISH')">Add</button></div>
+        <div class="class-row"><span class="class-nm">AP English Lit</span><button class="add-btn" data-name="AP English Lit" onclick="toggleSchedClass(this,'AP English Lit','ENGLISH')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Creative Writing</span><button class="add-btn" data-name="Creative Writing" onclick="toggleSchedClass(this,'Creative Writing','ENGLISH')">Add</button></div>
+      </div>
+
+      <!-- ── HISTORY ── -->
+      <div class="cat-section">
+        <div class="cat-header">HISTORY</div>
+        <div class="class-row"><span class="class-nm">World History</span><button class="add-btn" data-name="World History" onclick="toggleSchedClass(this,'World History','HISTORY')">Add</button></div>
+        <div class="class-row"><span class="class-nm">US History</span><button class="add-btn" data-name="US History" onclick="toggleSchedClass(this,'US History','HISTORY')">Add</button></div>
+        <div class="class-row"><span class="class-nm">AP US History</span><button class="add-btn" data-name="AP US History" onclick="toggleSchedClass(this,'AP US History','HISTORY')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Government</span><button class="add-btn" data-name="Government" onclick="toggleSchedClass(this,'Government','HISTORY')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Economics</span><button class="add-btn" data-name="Economics" onclick="toggleSchedClass(this,'Economics','HISTORY')">Add</button></div>
+      </div>
+
+      <!-- ── ARTS ── -->
+      <div class="cat-section">
+        <div class="cat-header">ARTS</div>
+        <div class="class-row"><span class="class-nm">Orchestra</span><button class="add-btn" data-name="Orchestra" onclick="toggleSchedClass(this,'Orchestra','ARTS')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Band</span><button class="add-btn" data-name="Band" onclick="toggleSchedClass(this,'Band','ARTS')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Choir</span><button class="add-btn" data-name="Choir" onclick="toggleSchedClass(this,'Choir','ARTS')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Art 1</span><button class="add-btn" data-name="Art 1" onclick="toggleSchedClass(this,'Art 1','ARTS')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Photography</span><button class="add-btn" data-name="Photography" onclick="toggleSchedClass(this,'Photography','ARTS')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Drama</span><button class="add-btn" data-name="Drama" onclick="toggleSchedClass(this,'Drama','ARTS')">Add</button></div>
+      </div>
+
+      <!-- ── LANGUAGES ── -->
+      <div class="cat-section">
+        <div class="cat-header">LANGUAGES</div>
+        <div class="class-row"><span class="class-nm">Spanish 1</span><button class="add-btn" data-name="Spanish 1" onclick="toggleSchedClass(this,'Spanish 1','LANGUAGES')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Spanish 2</span><button class="add-btn" data-name="Spanish 2" onclick="toggleSchedClass(this,'Spanish 2','LANGUAGES')">Add</button></div>
+        <div class="class-row"><span class="class-nm">French 1</span><button class="add-btn" data-name="French 1" onclick="toggleSchedClass(this,'French 1','LANGUAGES')">Add</button></div>
+        <div class="class-row"><span class="class-nm">Mandarin 1</span><button class="add-btn" data-name="Mandarin 1" onclick="toggleSchedClass(this,'Mandarin 1','LANGUAGES')">Add</button></div>
+      </div>
+
+      <!-- ── MY SCHEDULE ── -->
+      <div class="my-sched-wrap">
+        <div class="my-sched-ttl">My Schedule</div>
+        <div id="sched-list">
+          <p class="my-sched-empty">No classes added yet. Tap Add above to build your schedule.</p>
+        </div>
+      </div>
+
+    </div><!-- /.page-body -->
+    <div class="page-ad">
+      <div class="ad-card">
+        <div class="ad-img">img</div>
+        <div class="ad-info">
+          <div class="ad-name"  id="sched-ad-name">Five Star Binder</div>
+          <div class="ad-price" id="sched-ad-price">$14.99 at Staples</div>
+          <div class="ad-sponsor">Sponsored &middot; school supplies</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════
+       PAGE 5 — STUDY GROUPS
+  ══════════════════════════════ -->
+  <div id="page-study" class="page" style="display:none;">
+    <div class="top-bar">
+      <div class="logo-sm" onclick="nav('home')" style="cursor:pointer;"><span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span></div>
+      <div class="avatar">JL</div>
+    </div>
+
+    <div class="page-body">
+
+      <h2 class="study-pg-ttl">Study Groups</h2>
+      <p class="study-pg-sub">Join a group or start your own</p>
+
+      <!-- Filter pills -->
+      <div class="filter-row">
+        <button class="filter-pill active" onclick="setStudyFilter('All',this)">All</button>
+        <button class="filter-pill" onclick="setStudyFilter('Math',this)">Math</button>
+        <button class="filter-pill" onclick="setStudyFilter('Science',this)">Science</button>
+        <button class="filter-pill" onclick="setStudyFilter('English',this)">English</button>
+        <button class="filter-pill" onclick="setStudyFilter('History',this)">History</button>
+        <button class="filter-pill" onclick="setStudyFilter('Arts',this)">Arts</button>
+        <button class="filter-pill" onclick="setStudyFilter('Languages',this)">Languages</button>
+      </div>
+
+      <!-- Open groups -->
+      <p class="sec-title">Open groups</p>
+      <div id="open-groups-list"></div>
+
+      <!-- My Groups -->
+      <div class="my-grps-wrap">
+        <p class="sec-title">My Groups</p>
+        <div id="my-groups-list">
+          <p class="stg-empty">You haven&rsquo;t joined any groups yet.</p>
+        </div>
+      </div>
+
+      <!-- Create a group button -->
+      <button class="create-grp-btn" id="create-group-toggle" onclick="toggleCreateForm()">+ Create a group</button>
+
+      <!-- Inline create form -->
+      <div class="create-form" id="create-group-form">
+
+        <div class="form-grp">
+          <label class="form-lbl" for="cg-subject">Subject</label>
+          <div class="su-select-wrap">
+            <select class="su-select" id="cg-subject" onchange="this.classList.toggle('chosen',this.value!=='')">
+              <option value="">Select a subject</option>
+              <optgroup label="MATH">
+                <option>Algebra 1</option><option>Algebra 2</option><option>Geometry</option>
+                <option>Pre-Calculus</option><option>AP Calculus BC</option><option>Statistics</option>
+              </optgroup>
+              <optgroup label="SCIENCE">
+                <option>Biology</option><option>Chemistry</option><option>Physics</option>
+                <option>AP Biology</option><option>AP Chemistry</option><option>Environmental Science</option>
+              </optgroup>
+              <optgroup label="ENGLISH">
+                <option>English 9</option><option>English 10</option><option>English 11</option>
+                <option>English 12</option><option>AP English Lit</option><option>Creative Writing</option>
+              </optgroup>
+              <optgroup label="HISTORY">
+                <option>World History</option><option>US History</option><option>AP US History</option>
+                <option>Government</option><option>Economics</option>
+              </optgroup>
+              <optgroup label="ARTS">
+                <option>Orchestra</option><option>Band</option><option>Choir</option>
+                <option>Art 1</option><option>Photography</option><option>Drama</option>
+              </optgroup>
+              <optgroup label="LANGUAGES">
+                <option>Spanish 1</option><option>Spanish 2</option><option>French 1</option>
+                <option>Mandarin 1</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grp">
+          <label class="form-lbl" for="cg-day">Day</label>
+          <div class="su-select-wrap">
+            <select class="su-select" id="cg-day" onchange="this.classList.toggle('chosen',this.value!=='')">
+              <option value="">Select a day</option>
+              <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+              <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grp">
+          <label class="form-lbl" for="cg-time">Time</label>
+          <input class="su-input" type="text" id="cg-time" placeholder="e.g. 3:00 PM">
+        </div>
+
+        <button class="btn-primary" onclick="submitCreateGroup()">Create group</button>
+
+      </div><!-- /.create-form -->
+
+    </div><!-- /.page-body -->
+    <div class="page-ad">
+      <div class="ad-card">
+        <div class="ad-img">img</div>
+        <div class="ad-info">
+          <div class="ad-name"  id="study-ad-name">Jansport Backpack</div>
+          <div class="ad-price" id="study-ad-price">$39.99 at Target</div>
+          <div class="ad-sponsor">Sponsored &middot; school supplies</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════
+       PAGE 6 — TUTORS
+  ══════════════════════════════ -->
+  <div id="page-tutors" class="page" style="display:none;">
+    <div class="top-bar">
+      <div class="logo-sm" onclick="nav('home')" style="cursor:pointer;"><span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span></div>
+      <div class="avatar">JL</div>
+    </div>
+
+    <div class="tutors-viewport">
+
+      <!-- ── LIST VIEW PANEL ── -->
+      <div id="tutors-list-view" class="tutors-panel">
+
+        <h2 class="tutor-pg-ttl">Find a Tutor</h2>
+        <p class="tutor-pg-sub">Connect with a peer tutor in your subject</p>
+
+        <!-- Search -->
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24">
+            <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          </svg>
+          <input class="search-input" id="tutor-search" type="text"
+            placeholder="Search by subject or name..."
+            oninput="filterTutors()" autocomplete="off">
+        </div>
+
+        <!-- Tutor cards (rendered by JS) -->
+        <div id="tutor-cards-list"></div>
+
+        <!-- Ad strip -->
+        <div class="ad-card">
+          <div class="ad-img">img</div>
+          <div class="ad-info">
+            <div class="ad-name"  id="tutor-ad-name">Expo Dry Erase Markers</div>
+            <div class="ad-price" id="tutor-ad-price">$8.99 at Target</div>
+            <div class="ad-sponsor">Sponsored &middot; school supplies</div>
+          </div>
+        </div>
+
+      </div><!-- /#tutors-list-view -->
+
+      <!-- ── CHAT VIEW PANEL ── -->
+      <div id="tutors-chat-view" class="tutors-panel">
+
+        <!-- Chat header: back ← | centered avatar+name | spacer -->
+        <div class="chat-header">
+          <button class="back-btn" onclick="closeTutorChat()" aria-label="Back to tutors">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#378ADD">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+          </button>
+          <div class="chat-tutor-ctr">
+            <div class="chat-tutor-av" id="chat-tutor-av">SR</div>
+            <div class="chat-tutor-nm" id="chat-tutor-nm">Sam R.</div>
+          </div>
+          <div class="chat-hdr-space"></div>
+        </div>
+
+        <!-- Messages -->
+        <div class="chat-msgs" id="chat-messages"></div>
+
+        <!-- Input bar -->
+        <div class="chat-input-bar">
+          <input class="chat-txt" id="chat-input" type="text"
+            placeholder="Type a message..."
+            onkeydown="if(event.key==='Enter')sendChatMsg();"
+            autocomplete="off">
+          <button class="send-btn" onclick="sendChatMsg()" aria-label="Send">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffffff">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          </button>
+        </div>
+
+      </div><!-- /#tutors-chat-view -->
+
+    </div><!-- /.tutors-viewport -->
+  </div>
+
+
+  <!-- ══════════════════════════════
+       EVENTS
+  ══════════════════════════════ -->
+  <div id="page-events" class="page" style="display:none;">
+    <div class="top-bar">
+      <div class="logo-sm" onclick="nav('home')" style="cursor:pointer;"><span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span></div>
+      <div class="avatar">JL</div>
+    </div>
+    <div class="page-body">
+      <div class="events-pg-ttl">Events</div>
+
+      <!-- Match banner -->
+      <div class="match-banner">
+        <div class="match-banner-icon">🎉</div>
+        <div class="match-banner-text">You matched with <strong>Alex K.</strong> for Prom!</div>
+      </div>
+
+      <!-- Upcoming Dances -->
+      <div class="sec-title">Upcoming Dances</div>
+      <div class="dance-grid">
+        <div class="dance-card">
+          <div class="dance-card-icon">👑</div>
+          <div class="dance-card-name">Prom</div>
+          <div class="dance-card-date">Jun 14, 2026</div>
+        </div>
+        <div class="dance-card">
+          <div class="dance-card-icon">🏈</div>
+          <div class="dance-card-name">Homecoming</div>
+          <div class="dance-card-date">Oct 4, 2026</div>
+        </div>
+        <div class="dance-card">
+          <div class="dance-card-icon">🌸</div>
+          <div class="dance-card-name">MORP</div>
+          <div class="dance-card-date">Apr 25, 2026</div>
+        </div>
+        <div class="dance-card">
+          <div class="dance-card-icon">🌹</div>
+          <div class="dance-card-name">Sadie Hawkins</div>
+          <div class="dance-card-date">Nov 22, 2026</div>
+        </div>
+      </div>
+
+      <!-- Requests -->
+      <div class="sec-title-row">
+        <div class="sec-title">Requests</div>
+        <div class="evt-badge" id="evt-req-badge">3</div>
+      </div>
+      <div id="evt-requests-list"></div>
+
+      <!-- Your Match List -->
+      <div class="sec-title">Your Match List</div>
+      <div class="privacy-note">Only visible to you · Matches are mutual</div>
+      <div id="evt-match-list"></div>
+
+      <!-- Add People -->
+      <div class="sec-title">Add People</div>
+      <div class="search-wrap" style="margin-bottom:14px;">
+        <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input class="search-input" id="evt-search" type="text" placeholder="Search students…" oninput="filterStudents()" autocomplete="off">
+      </div>
+      <div id="evt-students-list"></div>
+
+    </div><!-- /.page-body -->
+    <div class="page-ad">
+      <div class="ad-card">
+        <div class="ad-img">img</div>
+        <div class="ad-info">
+          <div class="ad-name" id="evt-ad-name">Azazie Prom Dress</div>
+          <div class="ad-price" id="evt-ad-price">From $149 at Azazie</div>
+          <div class="ad-sponsor">Sponsored &middot; formal wear</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════
+       BOTTOM NAVIGATION BAR (shared, fixed)
+  ══════════════════════════════ -->
+  <nav id="bottom-nav" style="display:none;">
+
+    <button class="nav-item" id="nav-home" onclick="nav('home')">
+      <svg id="ico-home" viewBox="0 0 24 24" fill="#7AABCC"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span class="lbl">Home</span>
+    </button>
+
+    <button class="nav-item" id="nav-schedule" onclick="nav('schedule')">
+      <svg id="ico-schedule" viewBox="0 0 24 24" fill="#7AABCC"><path d="M19 3h-1V1h-2v2H8V1H6v2H5C3.89 3 3 3.9 3 5v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+      <span class="lbl">Schedule</span>
+    </button>
+
+    <button class="nav-item" id="nav-study" onclick="nav('study')">
+      <svg id="ico-study" viewBox="0 0 24 24" fill="#7AABCC"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      <span class="lbl">Study</span>
+    </button>
+
+    <button class="nav-item" id="nav-tutors" onclick="nav('tutors')">
+      <svg id="ico-tutors" viewBox="0 0 24 24" fill="#7AABCC"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+      <span class="lbl">Tutors</span>
+    </button>
+
+    <button class="nav-item" id="nav-events" onclick="nav('events')">
+      <svg id="ico-events" viewBox="0 0 24 24" fill="#7AABCC"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+      <span class="lbl">Events</span>
+    </button>
+
+  </nav>
+
+</div><!-- /#app -->
 
 <script>
-// ── State ──────────────────────────────────────────────────────────────────
-let weightKg=70, unit='kg', currentDay=0, condition='normal', duration='sprint';
-let kitChecked={};
+  /* ── Schedule page state ── */
+  var schedAddOrder = [];   // [{name, cat}] ordered by time added
+  var schedAdded    = {};   // name → cat, for quick lookup
 
-// ── Duration config ────────────────────────────────────────────────────────
-const durConfig={
-  sprint:{ label:'Under 45 min', carbHr:'20–30g', fluidHr:'400–500', gels:1,  gelNote:'1 gel only if race is close to 45 min — most riders need nothing for a 30 min effort', preGel:true,  preGelNote:'1 gel at −15 min is your main on-bike fuel for short races' },
-  short: { label:'45–75 min',    carbHr:'30–45g', fluidHr:'500–650', gels:2,  gelNote:'1 gel on the start line + 1 during if race exceeds 50 min', preGel:true,  preGelNote:'1 gel at −15 min + 1 mid-race if going over 50 min' },
-  medium:{ label:'75–120 min',   carbHr:'45–60g', fluidHr:'600–750', gels:4,  gelNote:'1 gel every 20–25 min from start — plan your feed zones', preGel:true,  preGelNote:'1 gel at −15 min then every 20–25 min on course' },
-  long:  { label:'2+ hours',     carbHr:'60–80g', fluidHr:'700–900', gels:6,  gelNote:'1 gel every 20 min + solid food (bars, chews) if race exceeds 2 hrs', preGel:true,  preGelNote:'1 caffeinated gel at −15 min then mix gels and bars every 20 min' },
-};
+  var SCHED_ADS = {
+    MATH:      { name: 'Casio FX-991EX Calculator', price: '$18.99 at Walmart'         },
+    SCIENCE:   { name: 'Lab Notebook 100pg',         price: '$9.99 at Staples'          },
+    ARTS:      { name: "D’Addario Rosin",       price: ‘$7.99 at Guitar Center’    },
+    HISTORY:   { name: 'Oxford Pocket Dictionary',   price: '$8.99 at Barnes & Noble'   },
+    ENGLISH:   { name: 'Oxford Pocket Dictionary',   price: '$8.99 at Barnes & Noble'   },
+    LANGUAGES: { name: 'Mead Composition Book',      price: '$4.99 at Target'           }
+  };
+  var SCHED_AD_DEFAULT = { name: 'Five Star Binder', price: '$14.99 at Staples' };
 
-// ── Condition config ───────────────────────────────────────────────────────
-const condConfig={
-  normal:{ label:'Normal',      fluidMult:1.0,  elecSodium:'200–400', onBikeExtra:'' },
-  cool:  { label:'Cool/Cold',   fluidMult:0.85, elecSodium:'200–350', onBikeExtra:' — cool air is still dehydrating, keep drinking' },
-  hot:   { label:'Very Hot',    fluidMult:1.35, elecSodium:'300–500', onBikeExtra:' — non-negotiable in heat, never skip a bottle' },
-  rain:  { label:'Rainy',       fluidMult:1.0,  elecSodium:'200–400', onBikeExtra:' — rain doesn\'t stop sweat loss, drink on schedule' },
-};
-
-const condBanners={
-  hot: { cls:'hot-banner',  icon:'🔥', text:'<strong>Hot conditions:</strong> fluid targets up ~35% across the whole week. Prioritise sodium-rich electrolyte drinks over plain water. Salty snacks are your friend.' },
-  cool:{ cls:'cool-banner', icon:'❄',  text:'<strong>Cool/cold conditions:</strong> you\'ll feel less thirsty but still dehydrate. Fluid targets slightly reduced. Watch for muscle stiffness — warm up properly.' },
-  rain:{ cls:'rain-banner', icon:'🌧', text:'<strong>Rainy conditions:</strong> sweat loss is real even in rain. Fluid targets unchanged. Protect nutrition in zip-lock bags and use wet lube on chain tonight.' },
-};
-
-function setCond(c){
-  condition=c;
-  ['cool','normal','hot','rain'].forEach(x=>{ document.getElementById('cond-'+x).className='cond-btn'+(x===c?' active-'+x:''); });
-  const banner=document.getElementById('condBanner');
-  if(condBanners[c]){ const b=condBanners[c]; banner.className='cond-banner visible '+b.cls; document.getElementById('condBannerIcon').textContent=b.icon; document.getElementById('condBannerText').innerHTML=b.text; }
-  else{ banner.className='cond-banner'; }
-  render();
-}
-
-function setDur(d){
-  duration=d;
-  ['sprint','short','medium','long'].forEach(x=>{ document.getElementById('dur-'+x).className='dur-btn'+(x===d?' active':''); });
-  render();
-}
-
-function setUnit(u){
-  unit=u;
-  document.getElementById('btnKg').classList.toggle('active',u==='kg');
-  document.getElementById('btnLb').classList.toggle('active',u==='lb');
-  document.getElementById('weightInput').value=u==='lb'?Math.round(weightKg*2.205):Math.round(weightKg);
-  render();
-}
-
-document.getElementById('weightInput').addEventListener('input',e=>{ const v=parseFloat(e.target.value)||70; weightKg=unit==='kg'?v:v/2.205; render(); });
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-const cc=()=>condConfig[condition];
-const dc=()=>durConfig[duration];
-function carbRange(lo,hi){ return `${Math.round(lo*weightKg)}–${Math.round(hi*weightKg)}g`; }
-function fluidMl(base){ return Math.round(base*cc().fluidMult); }
-function fluidStr(base){ const ml=fluidMl(base); return ml>=1000?(ml/1000).toFixed(1)+'L':ml+'ml'; }
-function f(ml){ return fluidStr(ml); }
-
-// Condition + duration inline notes
-function condNote(hot,rain,cool){
-  if(condition==='hot'&&hot)   return `<span class="cond-inline">${hot}</span>`;
-  if(condition==='rain'&&rain) return `<span class="cond-inline rain-inline">${rain}</span>`;
-  if(condition==='cool'&&cool) return `<span class="cond-inline cool-inline">${cool}</span>`;
-  return '';
-}
-function durNote(sprint,short,medium,long){
-  const map={sprint,short,medium,long};
-  const txt=map[duration];
-  return txt?`<span class="dur-inline">${txt}</span>`:'';
-}
-
-// On-bike fluid target adjusted for both condition AND duration
-function onBikeFluid(){
-  const dc_=dc(), mult=cc().fluidMult;
-  const parts=dc_.fluidHr.split('–').map(Number);
-  return `${Math.round(parts[0]*mult)}–${Math.round(parts[1]*mult)}`;
-}
-
-// ── Duration bar ───────────────────────────────────────────────────────────
-function renderDurBar(){
-  const d=dc();
-  document.getElementById('durBar').innerHTML=
-    `<span class="dur-pill">${d.label}</span>
-     <span class="dur-text">On bike: <em>${d.carbHr} carbs/hr</em> · <em>${onBikeFluid()}ml fluid/hr</em> · <em>${d.gels} gel${d.gels!==1?'s':''} planned</em> · ${d.gelNote}</span>`;
-}
-
-// ── Day data ───────────────────────────────────────────────────────────────
-function getDays(){
-  const w=weightKg, d=dc(), c=cc();
-  return [
-    { id:'d7',label:'Mon',sublabel:'−7 days',title:'Monday — 7 days out',subtitle:'Normal training · Start carb awareness',
-      note:`Carb target: ${carbRange(5,7)} · Water: ~3L base + 600ml per training hour`, carbNote:[5,7], waterBase:3000,
-      rows:[
-        ['6:30 AM','water',`${f(500)} water on waking — before coffee, before anything`],
-        ['7:00 AM','meal',`Oats (2 cups cooked) + banana + honey + blueberries + 2 scrambled eggs. <em>~80g carbs, 25–30g protein.</em> 300ml water or coffee.`+condNote(`Hot: add a pinch of salt to oats. Drink an extra 200ml water with breakfast.`,'','')],
-        ['9:30 AM','water',`${f(350)} water — sip steadily`],
-        ['10:00 AM','snack','1 banana + 1 tbsp peanut butter <small>~30g carbs</small>'],
-        ['12:30 PM','meal',`White rice or pasta (2 cups cooked) + grilled chicken (150g) + cooked veg + olive oil. <em>~80g carbs, 40g protein.</em> ${f(400)} water.`],
-        ['3:00 PM','snack',`Greek yogurt (200g) + granola + sliced apple. ${f(250)} water. <small>~40g carbs, 15g protein</small>`],
-        ['5:00 PM','water',`${f(300)} water or electrolyte drink before training`+condNote(`Hot: use ${f(450)} electrolyte mix — not plain water.`,'','')],
-        ['5:30 PM','pre',`Pre-ride: banana or energy bar 30 min before. <em>~${Math.round(w)}–${Math.round(w*2)}g carbs.</em> ${f(500)} electrolyte drink during.`],
-        ['7:00 PM','meal',`Salmon or chicken (150g) + sweet potato (1 large) + steamed broccoli. ${f(400)} water. <small>~70g carbs</small>`],
-        ['8:30 PM','snack','Cottage cheese (150g) or glass of milk — slow protein before sleep. 200ml water.'],
-      ]},
-    { id:'d6',label:'Tue',sublabel:'−6 days',title:'Tuesday — 6 days out',subtitle:'Moderate training · Consistent fueling',
-      note:`Carb target: ${carbRange(5,7)} · Add electrolyte drink to one daily bottle`, carbNote:[5,7], waterBase:3200,
-      rows:[
-        ['6:30 AM','water',`${f(500)} water on waking`],
-        ['7:00 AM','meal','3 eggs scrambled + 2 slices whole grain toast + avocado + 1 banana. 300ml water or coffee. <small>~70g carbs, 30g protein</small>'],
-        ['9:30 AM','snack','Rice cake + peanut butter + honey. 300ml water. <small>~30g carbs</small>'],
-        ['12:00 PM','meal',`Pasta (2 cups cooked) + tomato sauce + ground turkey + parmesan. Light salad. ${f(400)} water. <small>~80g carbs</small>`],
-        ['2:30 PM','water',`${f(300)} water — keep sipping`],
-        ['3:30 PM','snack','Trail mix (nuts, dried mango, pretzels) 35g. 250ml water. <small>~25g carbs</small>'],
-        ['5:30 PM','pre',`1–2g carbs/kg = <em>${Math.round(w)}–${Math.round(w*2)}g</em> 2 hrs before ride. Banana or bar. ${f(500)} electrolyte during.`],
-        ['7:30 PM','meal',`Post-ride within 30–45 min: white rice (2 cups) + grilled chicken thighs (150g) + zucchini. ${f(400)} water. <small>~80g carbs</small>`],
-        ['9:00 PM','snack','Chocolate milk 300ml — great recovery combo. <small>~30g carbs, 10g protein</small>'],
-      ]},
-    { id:'d5',label:'Wed',sublabel:'−5 days',title:'Wednesday — 5 days out',subtitle:'Carb loading begins · Short ride only',
-      note:`Carb target: ${carbRange(7,9)} · Add 500ml extra water vs normal · Cut fiber-heavy veg`, carbNote:[7,9], waterBase:3500,
-      rows:[
-        ['6:30 AM','water',`${f(500)} water on waking`],
-        ['7:00 AM','meal',`Large oats (2.5 cups cooked) + honey + banana + raisins + 2 slices white toast + jam. 300ml water. <small>~120g carbs</small>`+condNote('Start adding electrolyte tabs to your water today — sodium matters now.','','')],
-        ['9:30 AM','snack',`1 banana + energy bar. ${f(300)} water. <small>~60g carbs</small>`],
-        ['12:00 PM','meal',`Extra large pasta (2.5 cups) + light tomato sauce + chicken. No heavy salads. ${f(400)} water. <small>~100g carbs</small>`],
-        ['2:30 PM','snack','White bagel + honey + peanut butter. 300ml water. <small>~55g carbs</small>'],
-        ['4:00 PM','water',`${f(300)} extra water — 500ml above normal today`],
-        ['6:30 PM','meal',`White rice (2.5 cups) + salmon + cooked carrots. Avoid broccoli/beans/cabbage. ${f(400)} water. <small>~95g carbs</small>`],
-        ['8:30 PM','snack','White rice with honey, or 2 rice cakes with jam. 200ml water. 8–9 hrs sleep. <small>~50g carbs</small>'],
-      ]},
-    { id:'d4',label:'Thu',sublabel:'−4 days',title:'Thursday — 4 days out',subtitle:'Easy spin only · Full carb load',
-      note:`Carb target: ${carbRange(7,9)} · White refined carbs — digest fast, store as glycogen`, carbNote:[7,9], waterBase:3500,
-      rows:[
-        ['6:30 AM','water',`${f(500)} water on waking`],
-        ['7:00 AM','meal','White toast (3 slices) + jam + honey + 1 banana + 200ml fruit juice. 300ml water. <small>~110g carbs</small>'],
-        ['9:00 AM','snack',`2 rice cakes + honey. ${f(300)} electrolyte drink. <small>~40g carbs</small>`],
-        ['11:00 AM','water',`${f(300)} water`],
-        ['12:30 PM','meal',`White rice bowl (2.5 cups) + chicken or tuna + corn + olive oil. No raw veg. ${f(400)} water. <small>~100g carbs</small>`],
-        ['3:00 PM','snack',`Banana + pretzels. ${f(300)} water. <small>~45g carbs</small>`],
-        ['5:00 PM','water',`${f(300)} electrolyte drink before easy spin`],
-        ['7:00 PM','meal',`Pasta (3 cups cooked) + light tomato-chicken sauce + white roll. ${f(400)} water. <small>~120g carbs</small>`],
-        ['9:00 PM','snack','Rice pudding or white toast + honey. 250ml water. Bed early. <small>~50g carbs</small>'],
-      ]},
-    { id:'d3',label:'Fri',sublabel:'−3 days',title:'Friday — 3 days out',subtitle:'Rest or 20 min spin · Glycogen topped off',
-      note:'Cut caffeine today if you plan to use it race morning — let tolerance reset.', carbNote:[7,9], waterBase:3200,
-      rows:[
-        ['6:30 AM','water',`${f(500)} water on waking`],
-        ['7:00 AM','meal','Oatmeal (2 cups) + honey + banana + raisins + 1 glass OJ. 300ml water. <small>~100g carbs</small>'],
-        ['10:00 AM','snack','Apple + 2 rice cakes + almond butter. 300ml water. <small>~45g carbs</small>'],
-        ['12:30 PM','meal',`Big lunch — pasta or rice + tuna or chicken. Largest meal today. Cooked veg only. ${f(400)} water. <small>~100g carbs</small>`],
-        ['3:00 PM','water',`${f(350)} water. Check urine — pale straw.`],
-        ['3:30 PM','snack','Energy bar + banana. Keep caffeine low. 250ml water. <small>~60g carbs</small>'],
-        ['7:00 PM','meal',`White rice (2 cups) + chicken + cooked carrots or peas. Moderate dinner. ${f(400)} water. <small>~80g carbs</small>`],
-        ['9:00 PM','snack','Corn flakes + milk. 200ml water. <small>~40g carbs</small>'],
-      ]},
-    { id:'d2',label:'Sat',sublabel:'−2 days',title:'Saturday — 2 days out',subtitle:'Shakeout ride · Pack race kit tonight',
-      note:'Familiar foods only. No new restaurants. Pack everything tonight.', carbNote:[6,8], waterBase:3200, isKitDay:true,
-      rows:[
-        ['6:30 AM','water',`${f(500)} water on waking`],
-        ['7:00 AM','meal',`White toast (2–3 slices) + eggs + jam + 1 banana. 300ml water. <small>~80g carbs</small>`],
-        ['9:30 AM','pre',`30 min before shakeout: banana or bar. ${f(300)} electrolyte drink during. <em>~${Math.round(w)}g carbs.</em>`],
-        ['11:00 AM','snack',`Rice cake + peanut butter + honey. ${f(300)} water. <small>~35g carbs</small>`],
-        ['1:00 PM','meal',`Pasta or rice + chicken or fish. Cooked veg. ${f(400)} water. <small>~80g carbs</small>`],
-        ['3:30 PM','snack',`Banana + pretzels. ${f(300)} water. <small>~45g carbs</small>`],
-        ['5:30 PM','water',`${f(300)} water — sip steadily`+condNote('Pre-mix extra electrolyte bottles and refrigerate tonight.','Pack gels in zip-lock bags tonight — rain will soak jersey pockets.','')],
-        ['7:00 PM','meal',`Pasta + chicken + light sauce OR rice + fish. Nothing creamy or unfamiliar. By 7:30 PM. ${f(400)} water. <small>~80g carbs</small>`],
-        ['9:00 PM','snack','2 rice cakes + honey or cereal. Bed by 10 PM. <small>~35g carbs</small>'],
-      ]},
-    { id:'d1',label:'Sun',sublabel:'−1 day',title:'Sunday — 1 day out',subtitle:'Full rest · Final prep · Lights out by 10 PM',
-      note:'No training. No new foods. Dinner by 7 PM. Electrolyte drink tonight is critical.', carbNote:[6,8], waterBase:3200,
-      rows:[
-        ['7:00 AM','water',`${f(500)} water on waking`],
-        ['7:30 AM','meal','Oats + honey + banana OR white toast + eggs + jam. 300ml water or 1 coffee. <small>~80g carbs</small>'],
-        ['10:00 AM','snack',`Banana + rice cake + honey. ${f(300)} water. <small>~45g carbs</small>`],
-        ['12:30 PM','meal',`Big lunch — rice or pasta + chicken. Main carb top-up. Cooked veg. ${f(400)} water. <small>~100g carbs</small>`],
-        ['3:00 PM','snack',`Energy bar + banana. ${f(300)} water. Check urine. <small>~55g carbs</small>`],
-        ['5:00 PM','water',`${f(500)} electrolyte drink — sodium retains fluid overnight. Critical.`+condNote(`Hot tomorrow: drink ${f(600)} and add salt to dinner.`,'','')],
-        ['6:30 PM','meal',`Moderate dinner by 7 PM: pasta or rice + chicken. Nothing heavy. ${f(400)} water. <small>~80g carbs</small>`],
-        ['8:30 PM','snack','2 rice cakes + honey or cereal. Last food. 200ml water. <small>~35g carbs</small>'],
-        ['10:00 PM','water','Lights out. Everything is prepped.'],
-      ]},
-    { id:'rd',label:'Race',sublabel:'Race day',title:'Race day',subtitle:'Times relative to race start — adjust to your actual start',
-      note:`Never try a new gel or drink today. Only products you have trained with.`, carbNote:null, waterBase:null,
-      rows:[
-        ['−3.5 hrs','water',`${f(500)} water on waking`+condNote(`Hot: ${f(600)} and start electrolytes immediately.`,'','')],
-        ['−3 hrs','meal',`Breakfast: 2–3 cups oatmeal or white rice + 1 banana + peanut butter or 2 eggs. <em>Target ~${Math.round(w*2)}g carbs (2g/kg).</em> 300ml water or 1 coffee.`+condNote('Add a pinch of salt to oats.',`Cool: same carb amount — don't skip because you feel less hot.`,'')],
-        ['−2 hrs','snack',`Light if hungry: half banana, white toast + honey, or plain bar. ${f(350)} water over this hour.`+durNote(`Sprint race: you're mostly fuelled — keep this very light or skip entirely.`,`Short race: a small snack is fine, don't overdo it.`,'','')],
-        ['−75 min','water',`${f(250)} electrolyte drink — begin sodium pre-loading`+condNote(`Hot: ${f(350)}, minimum 300mg sodium per 500ml.`,'','')],
-        ['−60 min','pre','Warm-up begins. Sip electrolyte drink. No solid food from here.'],
-        ['−15 min','pre',`1 energy gel (~50mg caffeine if trained with it) + ${f(180)} water. <em>~${Math.round(w)}g carbs.</em>`+durNote('Sprint: this gel is your main on-bike fuel — the race is short enough you may need nothing else.','Short: this gel + 1 mid-race if over 50 min.','Medium: this + 1 every 20–25 min on course.','Long: caffeinated gel here, then mix gels and bars every 20 min.')],
-        ['During','during',`On bike: <em>${onBikeFluid()}ml fluid/hr</em>${c.onBikeExtra}. <em>${d.carbHr} carbs/hr</em>. `+durNote('Sprint: sip from 1 bottle — you likely won\'t need a gel mid-race under 35 min.','Short: 1–2 sips every 10–15 min. 1 gel if race goes past 50 min.','Medium: gel every 20–25 min. Drink every 15 min minimum.','Long: gel or solid food every 20 min. If over 2 hrs, add bars or chews from lap 2 onwards.')],
-        ['Finish +5','water',`${f(500)} water or electrolyte drink immediately`+condNote(`Hot: ${f(700)} and get out of the sun.`,'','')],
-        ['Finish +30','post',`<em>${Math.round(w)}g carbs + 20–25g protein</em> within 30 min. Chocolate milk, shake, or rice + chicken. Keep drinking until urine is pale.`],
-      ]},
-  ];
-}
-
-// ── Gear checklist ────────────────────────────────────────────────────────
-function getKitSections(){
-  const w=weightKg, d=dc(), isHot=condition==='hot', isRain=condition==='rain', isCool=condition==='cool';
-  const isLong=duration==='long', isMedium=duration==='medium', isSprint=duration==='sprint';
-  const gels=d.gels, bottles=isHot?3:2;
-
-  return [
-    { title:'Nutrition & fuel', icon:'⚡', items:[
-      { name:'Energy gels', detail:'Only brands you have trained with — no new products on race day', qty:`${gels} gel${gels!==1?'s':''}`, condStyle: isHot&&gels<5?'hot':null, condQty: isHot?`${gels+1} gels (hot — pack 1 extra)`:null },
-      { name:'Energy bars / chews', detail: isSprint?'Not needed for sprint races — gels only':'Backup solid fuel, especially important for longer races', qty: isSprint?'Skip':isLong?'2–3 bars':'1–2 bars', condStyle: isSprint?null:(isLong?'teal':null) },
-      { name:'Race breakfast food', detail:'Oats, white bread, banana, honey — pre-packed at home tonight', qty:'Packed' },
-      { name:'Pre-race snack (−2 hr)', detail:'Half banana or plain rice cake for the −2 hr window', qty:'1 serving', condStyle: isSprint?null:null },
-      { name:'Post-race recovery', detail:'Chocolate milk carton or recovery shake powder + shaker', qty:'1 serving' },
-      ...(isLong?[{ name:'Mid-race solid food', detail:'Bars or chews for lap 2+ — zip-lock bag in jersey pocket', qty:'2 bars', condStyle:'teal' }]:[]),
-    ]},
-    { title:'Hydration', icon:'💧', items:[
-      { name:'Water bottles', detail:'Filled and ready — check cage bolts', qty:`${bottles} bottles`, condQty: isHot?`${bottles+1} bottles (hot — extra capacity)`:isRain?`${bottles} bottles (rain — still drink on schedule)`:null, condStyle: isHot?'hot':isRain?'rain':null },
-      { name:'Electrolyte mix / tabs', detail:`Pre-measured: ${cc().elecSodium}mg sodium per 500ml`, qty: isHot?`${bottles+1} doses`:`${bottles} doses`, condStyle: isHot?'hot':null },
-      { name:'Electrolyte drink for warm-up', detail:'250–350ml in a separate bottle for the start line', qty:'1 bottle' },
-      { name:'Post-race electrolyte drink', detail:'Pre-mixed and waiting at your bag', qty:`${f(500)}+` },
-      ...(isHot?[{ name:'Ice / cooling towel', detail:'For post-race cooling — soak in ice water if available', qty:'1 towel', condStyle:'hot' }]:[]),
-    ]},
-    { title:'Bike & equipment', icon:'🚲', items:[
-      { name:'Helmet', detail:'Check fit and retention system. Clean visor.', qty:'Check fit' },
-      { name:'Gloves', detail:'Race gloves on, backup pair in bag', qty:'1 pair', condQty: isRain?'2 pairs (wet gloves are miserable)':isCool?'2 pairs (keep one dry)':null, condStyle: isRain?'rain':isCool?'cool':null },
-      { name:'Shoes & cleats', detail:'Check cleat bolt tension. Dry socks packed.', qty:'Check bolts' },
-      { name:'Glasses / goggles', detail:'Clean lenses — right tint for conditions', qty: isHot?'Dark lens':isRain?'Clear/yellow lens':'Normal', condStyle: isHot?'hot':isRain?'rain':null },
-      { name:'Tyre pressure', detail:'Set tonight, recheck race morning', qty:'Set tonight' },
-      { name:'Chain lubed', detail: isRain?'Wet lube — apply tonight':'Dry lube — apply tonight', qty: isRain?'Wet lube':'Dry lube', condStyle: isRain?'rain':null },
-      { name:'Spare tube + CO2 / pump', detail:'On the bike or in pack', qty:'1 tube + 2 CO2' },
-      { name:'Multi-tool', detail:'In pack or jersey pocket', qty:'1' },
-      ...(isLong?[{ name:'Extra nutrition storage', detail:'Top tube bag or hydration pack for long race', qty:'1 bag', condStyle:'teal' }]:[]),
-    ]},
-    { title:'Kit & clothing', icon:'👕', items:[
-      { name:'Race jersey', detail:'Clean and laid out. Pockets pre-loaded with gels.', qty:`${gels} gels in pockets` },
-      { name:'Shorts / bibs', detail:'Check chamois cream packed', qty:'1 pair' },
-      { name:'Base layer', detail: isCool?'Thermal base layer — cool conditions':'Lightweight wicking layer', qty:'1', condStyle: isCool?'cool':null },
-      ...(isRain?[{ name:'Rain jacket / gilet', detail:'Lightweight, fits in back jersey pocket', qty:'1', condStyle:'rain' }]:[]),
-      ...(isCool?[{ name:'Arm / leg warmers', detail:'Can be removed during race as you warm up', qty:'1 set', condStyle:'cool' }]:[]),
-      ...(isHot?[{ name:'Cooling cap / sweatband', detail:'Under helmet to help with heat management', qty:'1', condStyle:'hot' }]:[]),
-      { name:'Race number / plate', detail:'Pinned or zip-tied — check rules for placement', qty:'Attached' },
-      { name:'Timing chip', detail:'Strapped to ankle or as directed by organiser', qty:'Attached' },
-    ]},
-    { title:'Admin & misc', icon:'📋', items:[
-      { name:'Race entry confirmation', detail:'Email or printed — have it accessible at check-in', qty:'Ready' },
-      { name:'Cash / card', detail:'Registration desk, parking, food at venue', qty:'In bag' },
-      { name:'Phone charged', detail:'Map, contacts, emergency. Airplane mode during race.', qty:'100%' },
-      { name:'Sunscreen', detail: isHot?'Apply tonight AND morning — SPF 50+':'Apply morning of race', qty: isHot?'SPF 50+ ×2':'SPF 30+', condStyle: isHot?'hot':null },
-      { name:'Warm-up clothes', detail:'For post-race and keeping warm on the start line', qty:'1 set' },
-      { name:'First aid basics', detail:'Plasters, ibuprofen, anti-chafe cream', qty:'In bag' },
-    ]},
-  ];
-}
-
-// ── Render helpers ─────────────────────────────────────────────────────────
-function badgeHTML(type){
-  const m={meal:['b-meal','Meal'],snack:['b-snack','Snack'],water:['b-water','Water'],pre:['b-pre','Pre-ride'],during:['b-during','On bike'],post:['b-post','Recovery']};
-  const[cls,label]=m[type]||['b-snack',type];
-  return `<span class="badge ${cls}">${label}</span>`;
-}
-
-function renderStats(){
-  const days=getDays(), day=days[currentDay], isRace=day.id==='rd', w=weightKg, c=cc(), d=dc();
-  const items=isRace?[
-    { key:'Pre-race carbs', val:Math.round(w*2)+'g', unit:'2g/kg at breakfast', cls:'' },
-    { key:'On-bike fluid', val:onBikeFluid(), unit:'ml per hour', cls:condition==='hot'?'hot-val':'' },
-    { key:'Carbs per hour', val:d.carbHr, unit:'on-bike target', cls:'teal-val' },
-    { key:'Gels planned', val:d.gels+'', unit:d.label+' race', cls:'teal-val' },
-  ]:[
-    { key:'Carb target', val:`${Math.round((day.carbNote||[5])[0]*w)}–${Math.round((day.carbNote||[7])[1]*w)}g`, unit:'grams/day', cls:'' },
-    { key:'Daily water', val:day.waterBase?(fluidMl(day.waterBase)>=1000?(fluidMl(day.waterBase)/1000).toFixed(1)+'L':fluidMl(day.waterBase)+'ml'):'3L', unit:condition==='hot'?'hot conditions ↑':'target incl. training', cls:condition==='hot'?'hot-val':'' },
-    { key:'Conditions', val:c.label, unit:'fluid targets adjusted', cls:condition==='hot'?'hot-val':condition==='rain'?'':'' },
-    { key:'Your weight', val:unit==='kg'?Math.round(w)+'kg':Math.round(w*2.205)+'lb', unit:'all targets use this', cls:'' },
-  ];
-  document.getElementById('statsBar').innerHTML=items.map(i=>`<div class="stat-item"><div class="stat-key">${i.key}</div><div class="stat-val ${i.cls}">${i.val}</div><div class="stat-unit">${i.unit}</div></div>`).join('');
-}
-
-function renderNav(){
-  const days=getDays();
-  document.getElementById('dayNav').innerHTML=days.map((d,i)=>{
-    let ex=d.id==='rd'?'race':d.isKitDay?'kit-day':'';
-    return `<button class="day-btn ${ex} ${i===currentDay?'active':''}" onclick="selectDay(${i})">${d.label} <span style="opacity:0.55;font-size:10px;">${d.sublabel}</span></button>`;
-  }).join('');
-}
-
-function toggleKit(si,ii){ const k=`${si}_${ii}`; kitChecked[k]=!kitChecked[k]; renderMain(); }
-function resetKit(){ kitChecked={}; renderMain(); }
-
-function kitProgressHTML(sections){
-  let total=0,done=0;
-  sections.forEach((s,si)=>s.items.forEach((_,ii)=>{ total++; if(kitChecked[`${si}_${ii}`])done++; }));
-  const pct=total?Math.round(done/total*100):0;
-  return `<div class="kit-progress-bar"><div class="kit-progress-fill" style="width:${pct}%"></div></div><div class="kit-progress-label">${done} / ${total} items packed (${pct}%)</div>`;
-}
-
-function kitHTML(sections){
-  return sections.map((section,si)=>{
-    const sectionDone=section.items.filter((_,ii)=>kitChecked[`${si}_${ii}`]).length;
-    const items=section.items.map((item,ii)=>{
-      const checked=!!kitChecked[`${si}_${ii}`];
-      const qty=(item.condQty&&condition!=='normal')?item.condQty:item.qty;
-      const qtyClass=item.condStyle==='hot'?'hot-qty':item.condStyle==='rain'?'rain-qty':item.condStyle==='cool'?'cool-qty':item.condStyle==='teal'?'teal-qty':'';
-      return `<div class="kit-item ${checked?'checked':''}" onclick="toggleKit(${si},${ii})">
-        <div class="kit-checkbox"><span class="kit-checkmark">✓</span></div>
-        <div class="kit-item-text"><div class="kit-item-name">${item.name}</div><div class="kit-item-detail">${item.detail}</div></div>
-        <div class="kit-item-qty ${qtyClass}">${qty}</div>
-      </div>`;
-    }).join('');
-    return `<div class="kit-section">
-      <div class="kit-section-head"><div class="kit-section-title"><span>${section.icon}</span>${section.title}</div><div class="kit-section-count">${sectionDone}/${section.items.length}</div></div>
-      ${items}
-    </div>`;
-  }).join('');
-}
-
-function renderMain(){
-  const days=getDays(), day=days[currentDay], isRace=day.id==='rd', w=weightKg, c=cc();
-  let condNoteRow='';
-  if(condition==='hot')  condNoteRow=`<div class="cond-note-row"><span class="cond-note hot">🔥 Hot conditions: all fluid targets increased ~35%. Use electrolyte drinks over plain water. Check urine every few hours.</span></div>`;
-  else if(condition==='rain') condNoteRow=`<div class="cond-note-row"><span class="cond-note rain">🌧 Rainy: sweat loss is real even in rain — drink on schedule. Protect gels in zip-lock bags.</span></div>`;
-  else if(condition==='cool') condNoteRow=`<div class="cond-note-row"><span class="cond-note cool">❄ Cool: fluid targets slightly reduced. Don't skip water — cold air dehydrates. Warm up thoroughly.</span></div>`;
-
-  const rows=day.rows.map(([time,type,text])=>`<tr><td class="time-cell">${time}</td><td class="type-cell">${badgeHTML(type)}</td><td class="food-text">${text}</td></tr>`).join('');
-  const carbCard=day.carbNote?`<div class="carb-target"><strong>${Math.round(day.carbNote[0]*w)}–${Math.round(day.carbNote[1]*w)}g</strong> carbs today (${day.carbNote[0]}–${day.carbNote[1]}g/kg at ${Math.round(w)}kg)</div>`:'';
-  const hydCards=!isRace?`<div class="hydration-row">
-    <div class="hydration-card ${condition==='hot'?'hot-card':condition==='rain'?'rain-card':''}"><div class="hkey">Water target</div><div class="hval">${day.waterBase?(fluidMl(day.waterBase)>=1000?(fluidMl(day.waterBase)/1000).toFixed(1)+'L':fluidMl(day.waterBase)+'ml'):'3L'}</div></div>
-    <div class="hydration-card ${condition==='hot'?'hot-card':''}"><div class="hkey">Sodium per 500ml</div><div class="hval">${c.elecSodium}mg</div></div>
-    <div class="hydration-card"><div class="hkey">Urine check</div><div class="hval">Pale straw</div></div>
-  </div>`:'';
-
-  let kitSection='';
-  if(day.isKitDay){
-    const sections=getKitSections();
-    const condKitNote=condition!=='normal'?`<div class="cond-kit-note ${condition}">${
-      condition==='hot'?'🔥 <strong>Hot conditions:</strong> pack an extra bottle, extra gel, electrolyte mix for 3 bottles, cooling towel, and SPF 50+ sunscreen. Pre-mix bottles tonight and refrigerate.':
-      condition==='rain'?'🌧 <strong>Rainy conditions:</strong> pack rain jacket, 2 pairs of gloves, clear/yellow lens glasses, and wet lube your chain tonight. Put all gels and bars in a zip-lock bag.':
-      condition==='cool'?'❄ <strong>Cool/cold conditions:</strong> pack arm warmers, leg warmers, thermal base layer, and full-finger gloves. Layers you can remove mid-race are ideal.':''
-    }</div>`:'';
-    const durKitNote=`<div class="cond-kit-note" style="background:rgba(62,207,176,0.06);border:1px solid rgba(62,207,176,0.18);color:var(--teal);margin-top:8px;">
-      ⏱ <strong>${dc().label} race:</strong> ${dc().preGelNote}. Gel count: <strong>${dc().gels} gel${dc().gels!==1?'s':''}</strong> packed.
-    </div>`;
-    kitSection=`
-      <div class="section-divider"></div>
-      <div class="day-title" style="font-size:1.15rem;">Race kit checklist</div>
-      <div class="kit-intro">Pack everything tonight. Checking off items now means nothing gets left behind at the trailhead at 6 AM.</div>
-      ${kitProgressHTML(sections)}
-      ${condKitNote}
-      ${durKitNote}
-      <div class="kit-sections">${kitHTML(sections)}</div>
-      <button class="kit-reset-btn" onclick="resetKit()">Reset checklist</button>
-    `;
+  function toggleSchedClass(btn, name, cat) {
+    if (schedAdded[name]) {
+      delete schedAdded[name];
+      schedAddOrder = schedAddOrder.filter(function(x) { return x.name !== name; });
+      btn.textContent = 'Add';
+      btn.classList.remove('added');
+    } else {
+      schedAdded[name] = cat;
+      schedAddOrder.push({ name: name, cat: cat });
+      btn.innerHTML = '&#10003;&nbsp;Added';
+      btn.classList.add('added');
+    }
+    renderSchedList();
+    updateSchedAd();
   }
 
-  document.getElementById('mainContent').innerHTML=`
-    <div class="day-header" style="margin-bottom:1.1rem;">
-      <div class="day-title">${day.title}</div>
-      <div class="day-subtitle">${day.subtitle}</div>
-      <div class="day-note">${day.note}</div>
-      ${condNoteRow}
-    </div>
-    ${carbCard}
-    <div class="table-wrap"><table>
-      <thead><tr><th style="width:80px;">Time</th><th style="width:88px;">Type</th><th>What to eat / drink</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table></div>
-    ${hydCards}
-    ${kitSection}
-  `;
-}
+  function removeSchedItem(name) {
+    if (!schedAdded[name]) return;
+    delete schedAdded[name];
+    schedAddOrder = schedAddOrder.filter(function(x) { return x.name !== name; });
+    var btn = document.querySelector('.add-btn[data-name="' + name + '"]');
+    if (btn) { btn.textContent = 'Add'; btn.classList.remove('added'); }
+    renderSchedList();
+    updateSchedAd();
+  }
 
-function selectDay(i){ currentDay=i; render(); }
-function render(){ renderStats(); renderDurBar(); renderNav(); renderMain(); }
-render();
+  function renderSchedList() {
+    var el = document.getElementById('sched-list');
+    if (schedAddOrder.length === 0) {
+      el.innerHTML = '<p class="my-sched-empty">No classes added yet. Tap Add above to build your schedule.</p>';
+      return;
+    }
+    el.innerHTML = schedAddOrder.map(function(item) {
+      return '<div class="sched-item">' +
+        '<div class="sched-item-info">' +
+          '<div class="sched-item-nm">'  + item.name + '</div>' +
+          '<div class="sched-item-cat">' + item.cat  + '</div>' +
+        '</div>' +
+        '<button class="rm-btn" onclick="removeSchedItem(' + JSON.stringify(item.name) + ')">&#215;</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function updateSchedAd() {
+    var last = schedAddOrder[schedAddOrder.length - 1];
+    var ad   = last ? (SCHED_ADS[last.cat] || SCHED_AD_DEFAULT) : SCHED_AD_DEFAULT;
+    document.getElementById('sched-ad-name').textContent  = ad.name;
+    document.getElementById('sched-ad-price').textContent = ad.price;
+  }
+
+  /* ── Utility ── */
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── Study Groups page ── */
+  var STUDY_DATA = [
+    {id:'sg1', name:'AP Calculus Review',           cat:'Math',      members:3, meeting:'Saturday · 2:00 PM'},
+    {id:'sg2', name:'Chemistry Lab Prep',            cat:'Science',   members:2, meeting:'Sunday · 4:00 PM'},
+    {id:'sg3', name:'AP US History Study',           cat:'History',   members:4, meeting:'Friday · 5:00 PM'},
+    {id:'sg4', name:'Orchestra Section Practice',    cat:'Arts',      members:5, meeting:'Monday · 3:30 PM'},
+    {id:'sg5', name:'AP English Essay Prep',         cat:'English',   members:2, meeting:'Thursday · 6:00 PM'},
+    {id:'sg6', name:'Spanish Conversation Practice', cat:'Languages', members:3, meeting:'Wednesday · 4:00 PM'}
+  ];
+  var customGroups  = [];
+  var studyFilter   = 'All';
+  var studyJoined   = [];   /* [{id,name,cat,meeting}] in join order */
+
+  var STUDY_ADS = {
+    Math:      { name:'TI-84 Plus CE Calculator',   price:'$89.99 at Best Buy'       },
+    Science:   { name:'Composition Lab Notebook',    price:'$9.99 at Staples'         },
+    Arts:      { name:"D'Addario Rosin Cake",        price:'$7.99 at Guitar Center'   },
+    History:   { name:'Sticky Notes Variety Pack',   price:'$11.99 at Target'         },
+    English:   { name:'Sticky Notes Variety Pack',   price:'$11.99 at Target'         },
+    Languages: { name:'Mead Five Star Notebook',     price:'$6.99 at Walmart'         }
+  };
+  var STUDY_AD_DEF = { name:'Jansport Backpack', price:'$39.99 at Target' };
+
+  var CAT_MAP = {
+    'Algebra 1':'Math','Algebra 2':'Math','Geometry':'Math','Pre-Calculus':'Math','AP Calculus BC':'Math','Statistics':'Math',
+    'Biology':'Science','Chemistry':'Science','Physics':'Science','AP Biology':'Science','AP Chemistry':'Science','Environmental Science':'Science',
+    'English 9':'English','English 10':'English','English 11':'English','English 12':'English','AP English Lit':'English','Creative Writing':'English',
+    'World History':'History','US History':'History','AP US History':'History','Government':'History','Economics':'History',
+    'Orchestra':'Arts','Band':'Arts','Choir':'Arts','Art 1':'Arts','Photography':'Arts','Drama':'Arts',
+    'Spanish 1':'Languages','Spanish 2':'Languages','French 1':'Languages','Mandarin 1':'Languages'
+  };
+
+  function setStudyFilter(cat, el) {
+    studyFilter = cat;
+    document.querySelectorAll('.filter-pill').forEach(function(p){ p.classList.remove('active'); });
+    el.classList.add('active');
+    renderOpenGroups();
+  }
+
+  function allGroups() { return STUDY_DATA.concat(customGroups); }
+
+  function isJoined(id) { return studyJoined.some(function(j){ return j.id === id; }); }
+
+  function renderOpenGroups() {
+    var list = document.getElementById('open-groups-list');
+    if (!list) return;
+    var groups = studyFilter === 'All' ? allGroups() : allGroups().filter(function(g){ return g.cat === studyFilter; });
+    if (groups.length === 0) {
+      list.innerHTML = '<p class="stg-empty">No groups found for this subject.</p>';
+      return;
+    }
+    list.innerHTML = groups.map(function(g) {
+      var joined = isJoined(g.id);
+      return '<div class="sg-open-card">' +
+        '<div class="sgo-info">' +
+          '<div class="sgo-name">' + escHtml(g.name) + '</div>' +
+          '<div class="sgo-meta">' + escHtml(g.cat) + ' &middot; ' + g.members + ' members</div>' +
+          '<div class="sgo-meta">' + escHtml(g.meeting) + '</div>' +
+        '</div>' +
+        '<button class="join-btn' + (joined ? ' joined' : '') + '" onclick="toggleJoin(' + JSON.stringify(g.id) + ')">' +
+          (joined ? 'Joined &#10003;' : 'Join') +
+        '</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function toggleJoin(id) {
+    var idx = studyJoined.findIndex(function(j){ return j.id === id; });
+    if (idx !== -1) {
+      studyJoined.splice(idx, 1);
+    } else {
+      var g = allGroups().find(function(g){ return g.id === id; });
+      if (g) studyJoined.push({id:g.id, name:g.name, cat:g.cat, meeting:g.meeting});
+    }
+    renderOpenGroups();
+    renderMyGroups();
+    updateStudyAd();
+  }
+
+  function renderMyGroups() {
+    var el = document.getElementById('my-groups-list');
+    if (!el) return;
+    if (studyJoined.length === 0) {
+      el.innerHTML = '<p class="stg-empty">You haven&rsquo;t joined any groups yet.</p>';
+      return;
+    }
+    el.innerHTML = studyJoined.map(function(g) {
+      return '<div class="my-grp-card">' +
+        '<div class="my-grp-info">' +
+          '<div class="my-grp-nm">'   + escHtml(g.name)    + '</div>' +
+          '<div class="my-grp-time">' + escHtml(g.meeting) + '</div>' +
+        '</div>' +
+        '<button class="leave-btn" onclick="toggleJoin(' + JSON.stringify(g.id) + ')">Leave</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function updateStudyAd() {
+    var last = studyJoined[studyJoined.length - 1];
+    var ad   = last ? (STUDY_ADS[last.cat] || STUDY_AD_DEF) : STUDY_AD_DEF;
+    var nm = document.getElementById('study-ad-name');
+    var pr = document.getElementById('study-ad-price');
+    if (nm) nm.textContent = ad.name;
+    if (pr) pr.textContent = ad.price;
+  }
+
+  function toggleCreateForm() {
+    var form = document.getElementById('create-group-form');
+    var btn  = document.getElementById('create-group-toggle');
+    form.classList.toggle('open');
+    btn.textContent = form.classList.contains('open') ? '✕  Cancel' : '+ Create a group';
+  }
+
+  function submitCreateGroup() {
+    var subj = document.getElementById('cg-subject').value;
+    var day  = document.getElementById('cg-day').value;
+    var time = document.getElementById('cg-time').value.trim();
+    if (!subj || !day) return;
+    var cat     = CAT_MAP[subj] || 'General';
+    var meeting = day + (time ? ' · ' + time : '');
+    var newG    = { id:'cg-'+Date.now(), name:subj+' Study Group', cat:cat, members:1, meeting:meeting };
+    customGroups.push(newG);
+    studyJoined.push({id:newG.id, name:newG.name, cat:newG.cat, meeting:newG.meeting});
+    /* reset form */
+    document.getElementById('cg-subject').value = '';
+    document.getElementById('cg-day').value     = '';
+    document.getElementById('cg-time').value    = '';
+    ['cg-subject','cg-day'].forEach(function(id){
+      document.getElementById(id).classList.remove('chosen');
+    });
+    toggleCreateForm();
+    renderOpenGroups();
+    renderMyGroups();
+    updateStudyAd();
+  }
+
+  /* ── Tutors page ── */
+  var TUTORS_DATA = [
+    {id:'t1', init:'SR', name:'Sam R.',    subj:'Calculus, Statistics',    stars:5, cat:'Math'},
+    {id:'t2', init:'ML', name:'Maya L.',   subj:'US History, English Lit', stars:4, cat:'History/English'},
+    {id:'t3', init:'TK', name:'Tyler K.', subj:'Orchestra, Music Theory', stars:5, cat:'Arts'},
+    {id:'t4', init:'PM', name:'Priya M.', subj:'Chemistry, AP Biology',   stars:5, cat:'Science'},
+    {id:'t5', init:'JT', name:'Jordan T.',subj:'Spanish, French',         stars:4, cat:'Languages'},
+    {id:'t6', init:'AW', name:'Alex W.',  subj:'Physics, AP Calculus',    stars:4, cat:'Math/Science'}
+  ];
+  var TUTOR_ADS = {
+    'Math':           {name:'Casio FX-991EX Scientific Calculator', price:'$18.99 at Walmart'},
+    'Science':        {name:'Lab Composition Notebook',              price:'$9.99 at Staples'},
+    'Arts':           {name:"D'Addario Rosin",                       price:'$7.99 at Guitar Center'},
+    'History/English':{name:'Oxford Pocket Dictionary',              price:'$8.99 at Amazon'},
+    'Languages':      {name:'Spanish English Dictionary',            price:'$12.99 at Barnes & Noble'},
+    'Math/Science':   {name:'Casio FX-991EX Scientific Calculator', price:'$18.99 at Walmart'}
+  };
+  var TUTOR_AD_DEF  = {name:'Expo Dry Erase Markers', price:'$8.99 at Target'};
+  var lastTutorCat  = null;
+  var chatTimerRef  = null;
+
+  function renderTutorCards() {
+    var list = document.getElementById('tutor-cards-list');
+    if (!list) return;
+    var inp = document.getElementById('tutor-search');
+    var q   = inp ? inp.value.toLowerCase() : '';
+    var filtered = TUTORS_DATA.filter(function(t) {
+      return !q || t.name.toLowerCase().indexOf(q) !== -1 || t.subj.toLowerCase().indexOf(q) !== -1;
+    });
+    if (filtered.length === 0) {
+      list.innerHTML = '<p class="no-results">No tutors found. Try a different search.</p>';
+      return;
+    }
+    list.innerHTML = filtered.map(function(t) {
+      var stars = '';
+      for (var i = 1; i <= 5; i++) {
+        stars += '<span class="' + (i <= t.stars ? 'star-f' : 'star-e') + '">' + (i <= t.stars ? '★' : '☆') + '</span>';
+      }
+      return '<div class="tutor-card">' +
+        '<div class="tutor-av">' + escHtml(t.init) + '</div>' +
+        '<div class="tutor-info">' +
+          '<div class="tutor-nm">'   + escHtml(t.name) + '</div>' +
+          '<div class="tutor-subj">' + escHtml(t.subj) + '</div>' +
+          '<div class="tutor-stars">' + stars + '</div>' +
+        '</div>' +
+        '<button class="interest-btn" onclick="openTutorChat(' + JSON.stringify(t.id) + ')">' +
+          'I\'m<br>interested' +
+        '</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function filterTutors() { renderTutorCards(); }
+
+  function openTutorChat(tutorId) {
+    var t = TUTORS_DATA.find(function(x) { return x.id === tutorId; });
+    if (!t) return;
+
+    /* Update ad based on this tutor's category */
+    lastTutorCat = t.cat;
+    updateTutorAd();
+
+    /* Populate chat header */
+    document.getElementById('chat-tutor-av').textContent = t.init;
+    document.getElementById('chat-tutor-nm').textContent = t.name;
+
+    /* Reset messages: initial user message + typing indicator */
+    if (chatTimerRef) { clearTimeout(chatTimerRef); chatTimerRef = null; }
+    var msgs = document.getElementById('chat-messages');
+    msgs.innerHTML =
+      '<div class="msg-row sent"><div class="msg-bubble sent">Hi! I\'m interested in tutoring sessions.</div></div>' +
+      '<div class="typing-row" id="typing-indicator">' +
+        '<div class="typing-pill">' +
+          '<div class="typing-dot"></div>' +
+          '<div class="typing-dot"></div>' +
+          '<div class="typing-dot"></div>' +
+        '</div>' +
+      '</div>';
+
+    /* Slide panels */
+    document.getElementById('tutors-list-view').classList.add('chat-panel-out');
+    document.getElementById('tutors-chat-view').classList.add('chat-panel-in');
+
+    /* Tutor reply after 1 second */
+    chatTimerRef = setTimeout(function() {
+      var ti = document.getElementById('typing-indicator');
+      if (ti) ti.remove();
+      appendChatMsg('recv', 'Hey! Sounds great, let\'s set something up 😊');
+      chatTimerRef = null;
+    }, 1000);
+  }
+
+  function closeTutorChat() {
+    if (chatTimerRef) { clearTimeout(chatTimerRef); chatTimerRef = null; }
+    document.getElementById('tutors-list-view').classList.remove('chat-panel-out');
+    document.getElementById('tutors-chat-view').classList.remove('chat-panel-in');
+  }
+
+  function appendChatMsg(type, text) {
+    var msgs = document.getElementById('chat-messages');
+    var row  = document.createElement('div');
+    row.className = 'msg-row ' + type;
+    var bub = document.createElement('div');
+    bub.className = 'msg-bubble ' + type;
+    bub.textContent = text;
+    row.appendChild(bub);
+    msgs.appendChild(row);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function sendChatMsg() {
+    var inp = document.getElementById('chat-input');
+    var txt = inp.value.trim();
+    if (!txt) return;
+    appendChatMsg('sent', txt);
+    inp.value = '';
+    inp.focus();
+  }
+
+  function updateTutorAd() {
+    var ad = lastTutorCat ? (TUTOR_ADS[lastTutorCat] || TUTOR_AD_DEF) : TUTOR_AD_DEF;
+    var nm = document.getElementById('tutor-ad-name');
+    var pr = document.getElementById('tutor-ad-price');
+    if (nm) nm.textContent = ad.name;
+    if (pr) pr.textContent = ad.price;
+  }
+
+  /* ── Events page ── */
+  var eventsRequests = [
+    {id:'r1', name:'Liam T.',  grade:'Grade 11', dance:'Prom',       init:'LT'},
+    {id:'r2', name:'Noah K.',  grade:'Grade 12', dance:'Homecoming', init:'NK'},
+    {id:'r3', name:'Ethan M.', grade:'Grade 11', dance:'Prom',       init:'EM'}
+  ];
+  var eventsMatched = [
+    {id:'alex', name:'Alex K.', event:'Prom', init:'AK'}
+  ];
+  var eventsHandled = {};  /* ids accepted OR declined */
+  var eventsAdded   = {};  /* student ids added via search */
+  var STUDENTS_DATA = [
+    {id:'st1', name:'Emma S.',   grade:'Grade 12', init:'ES'},
+    {id:'st2', name:'Liam T.',   grade:'Grade 11', init:'LT'},
+    {id:'st3', name:'Ava R.',    grade:'Grade 10', init:'AR'},
+    {id:'st4', name:'Noah K.',   grade:'Grade 12', init:'NK'},
+    {id:'st5', name:'Chloe B.',  grade:'Grade 11', init:'CB'},
+    {id:'st6', name:'Ethan M.',  grade:'Grade 11', init:'EM'},
+    {id:'st7', name:'Sophia D.', grade:'Grade 12', init:'SD'},
+    {id:'st8', name:'Mason W.',  grade:'Grade 10', init:'MW'}
+  ];
+  var EVT_ADS = [
+    {name:'Azazie Prom Dress',        price:'From $149 at Azazie'},
+    {name:"Men's Suit Warehouse",     price:'Suits from $89'},
+    {name:"David's Bridal Corsage",   price:'$24.99 at David\'s Bridal'},
+    {name:'Party City Accessories',   price:'$12.99 at Party City'}
+  ];
+
+  function renderEventRequests() {
+    var container = document.getElementById('evt-requests-list');
+    var badge     = document.getElementById('evt-req-badge');
+    if (!container) return;
+    var active = eventsRequests.filter(function(r){ return !eventsHandled[r.id]; });
+    if (badge) {
+      badge.textContent = active.length;
+      badge.style.display = active.length > 0 ? '' : 'none';
+    }
+    if (active.length === 0) {
+      container.innerHTML = '<div class="evt-empty-note">No pending requests</div>';
+      return;
+    }
+    container.innerHTML = active.map(function(r) {
+      return '<div class="req-card" id="req-' + r.id + '">' +
+        '<div class="req-av">' + escHtml(r.init) + '</div>' +
+        '<div class="req-info">' +
+          '<div class="req-name">' + escHtml(r.name) + '</div>' +
+          '<span class="req-dance-pill">' + escHtml(r.dance) + '</span>' +
+        '</div>' +
+        '<div class="req-actions">' +
+          '<button class="accept-btn" onclick="acceptRequest(\'' + r.id + '\')">Accept</button>' +
+          '<button class="decline-btn" onclick="declineRequest(\'' + r.id + '\')">Decline</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function acceptRequest(id) {
+    var req = eventsRequests.find(function(r){ return r.id === id; });
+    if (!req || eventsHandled[id]) return;
+    var card = document.getElementById('req-' + id);
+    if (card) {
+      card.style.background = '#dcfce7';
+      setTimeout(function() {
+        card.style.opacity = '0';
+        setTimeout(function() {
+          eventsHandled[id] = true;
+          eventsMatched.push({id:id, name:req.name, event:req.dance, init:req.init});
+          renderEventRequests();
+          renderEventMatchList();
+          updateEvtAd();
+        }, 300);
+      }, 250);
+    }
+  }
+
+  function declineRequest(id) {
+    if (eventsHandled[id]) return;
+    var card = document.getElementById('req-' + id);
+    if (card) {
+      card.style.opacity = '0';
+      setTimeout(function() {
+        eventsHandled[id] = true;
+        renderEventRequests();
+      }, 300);
+    }
+  }
+
+  function renderEventMatchList() {
+    var container = document.getElementById('evt-match-list');
+    if (!container) return;
+    if (eventsMatched.length === 0) {
+      container.innerHTML = '<div class="evt-empty-note">No matches yet &middot; Add people or accept requests</div>';
+      return;
+    }
+    container.innerHTML = eventsMatched.map(function(m) {
+      return '<div class="match-item">' +
+        '<div class="match-av">' + escHtml(m.init) + '</div>' +
+        '<div class="match-info">' +
+          '<div class="match-name">' + escHtml(m.name) + '</div>' +
+          '<div class="match-event">Matched for ' + escHtml(m.event) + ' &#10003;</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function filterStudents() { renderStudentCards(); }
+
+  function renderStudentCards() {
+    var q = (document.getElementById('evt-search').value || '').toLowerCase();
+    var container = document.getElementById('evt-students-list');
+    if (!container) return;
+    var list = STUDENTS_DATA.filter(function(s){
+      return !q || s.name.toLowerCase().indexOf(q) !== -1;
+    });
+    if (list.length === 0) {
+      container.innerHTML = '<div class="evt-empty-note">No students found</div>';
+      return;
+    }
+    container.innerHTML = list.map(function(s) {
+      var added = !!eventsAdded[s.id];
+      return '<div class="student-card">' +
+        '<div class="student-av">' + escHtml(s.init) + '</div>' +
+        '<div class="student-info">' +
+          '<div class="student-name">' + escHtml(s.name) + '</div>' +
+          '<div class="student-grade">' + escHtml(s.grade) + '</div>' +
+        '</div>' +
+        '<button class="add-list-btn' + (added ? ' added' : '') + '" ' +
+          (added ? 'disabled' : 'onclick="addStudent(\'' + s.id + '\')"') + '>' +
+          (added ? 'Added &#10003;' : 'Add to list') +
+        '</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function addStudent(id) {
+    var student = STUDENTS_DATA.find(function(s){ return s.id === id; });
+    if (!student || eventsAdded[id]) return;
+    eventsAdded[id] = true;
+    /* auto-match: check if this student has a pending request */
+    var matchReq = eventsRequests.find(function(r){
+      return r.name === student.name && !eventsHandled[r.id];
+    });
+    if (matchReq) {
+      var reqCard = document.getElementById('req-' + matchReq.id);
+      if (reqCard) {
+        reqCard.style.background = '#dcfce7';
+        setTimeout(function() {
+          reqCard.style.opacity = '0';
+          setTimeout(function() {
+            eventsHandled[matchReq.id] = true;
+            eventsMatched.push({id:matchReq.id, name:matchReq.name, event:matchReq.dance, init:matchReq.init});
+            renderEventRequests();
+            renderEventMatchList();
+          }, 300);
+        }, 250);
+      }
+    }
+    renderStudentCards();
+    updateEvtAd();
+  }
+
+  function updateEvtAd() {
+    var total = Object.keys(eventsAdded).length + Object.keys(eventsHandled).length;
+    var ad = EVT_ADS[total % EVT_ADS.length];
+    var nm = document.getElementById('evt-ad-name');
+    var pr = document.getElementById('evt-ad-price');
+    if (nm) nm.textContent = ad.name;
+    if (pr) pr.textContent = ad.price;
+  }
+
+  var MAIN = ['home', 'schedule', 'study', 'tutors', 'events'];
+
+  /* goTo() — delegates to nav() defined in the <head> script.
+     Used internally by closeTutorChat() and the boot call. */
+  function goTo(page) {
+    nav(page);
+  }
+
+  // Grade dropdown: switch from placeholder color to navy on selection
+  document.getElementById('grade-select').addEventListener('change', function() {
+    this.classList.toggle('chosen', this.value !== '');
+  });
+
+  // Initialise dynamic sections
+  renderOpenGroups();
+  renderMyGroups();
+  renderTutorCards();
+  renderEventRequests();
+  renderEventMatchList();
+  renderStudentCards();
+
+  // Boot on login page
+  nav('login');
 </script>
 </body>
 </html>
