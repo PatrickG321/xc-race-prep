@@ -1667,7 +1667,7 @@
           '<div class="sched-item-nm">'  + item.name + '</div>' +
           '<div class="sched-item-cat">' + item.cat  + '</div>' +
         '</div>' +
-        '<button class="rm-btn" onclick="removeSchedItem(' + JSON.stringify(item.name) + ')">&#215;</button>' +
+        '<button class="rm-btn" onclick="removeSchedItem(\'' + item.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\')">&#215;</button>' +
       '</div>';
     }).join('');
   }
@@ -1743,7 +1743,7 @@
           '<div class="sgo-meta">' + escHtml(g.cat) + ' &middot; ' + g.members + ' members</div>' +
           '<div class="sgo-meta">' + escHtml(g.meeting) + '</div>' +
         '</div>' +
-        '<button class="join-btn' + (joined ? ' joined' : '') + '" onclick="toggleJoin(' + JSON.stringify(g.id) + ')">' +
+        '<button class="join-btn' + (joined ? ' joined' : '') + '" onclick="toggleJoin(\'' + g.id + '\')">' +
           (joined ? 'Joined &#10003;' : 'Join') +
         '</button>' +
       '</div>';
@@ -1776,7 +1776,7 @@
           '<div class="my-grp-nm">'   + escHtml(g.name)    + '</div>' +
           '<div class="my-grp-time">' + escHtml(g.meeting) + '</div>' +
         '</div>' +
-        '<button class="leave-btn" onclick="toggleJoin(' + JSON.stringify(g.id) + ')">Leave</button>' +
+        '<button class="leave-btn" onclick="toggleJoin(\'' + g.id + '\')">Leave</button>' +
       '</div>';
     }).join('');
   }
@@ -1865,7 +1865,7 @@
           '<div class="tutor-subj">' + escHtml(t.subj) + '</div>' +
           '<div class="tutor-stars">' + stars + '</div>' +
         '</div>' +
-        '<button class="interest-btn" onclick="openTutorChat(' + JSON.stringify(t.id) + ')">' +
+        '<button class="interest-btn" onclick="openTutorChat(\'' + t.id + '\')">' +
           'I\'m<br>interested' +
         '</button>' +
       '</div>';
