@@ -131,9 +131,6 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .hydration-card.hot-card .hkey{color:#ff7070;}.hydration-card.rain-card .hkey{color:#7ab8f0;}
 .hval{font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:900;color:#5ab4f0;}
 .hydration-card.hot-card .hval{color:#ff7070;}.hydration-card.rain-card .hval{color:#7ab8f0;}
-.urine-guide{display:flex;gap:5px;margin-top:8px;align-items:flex-end;}
-.us{width:18px;height:18px;border-radius:4px;flex-shrink:0;}
-.ul{font-family:'Nunito',sans-serif;font-size:9px;font-weight:700;color:var(--text3);margin-top:2px;text-align:center;}
 .carb-target{display:flex;align-items:center;gap:10px;margin-top:1rem;padding:10px 14px;background:var(--orange-dim);border:1px solid rgba(255,122,47,0.2);border-radius:var(--r2);font-size:13px;font-weight:600;color:var(--orange3);}
 .carb-target strong{font-family:'Nunito',sans-serif;color:var(--orange);font-size:15px;font-weight:900;}
 .section-divider{height:1px;background:var(--border);margin:2rem 0;}
@@ -286,7 +283,6 @@ body.light .kit-section{background:#fafff8;}
 body.light .kit-section-head{background:#ddeedd;}
 body.light .dur-bar{background:rgba(30,158,120,0.06);}
 body.light .hydration-card{background:rgba(42,128,192,0.07);}
-body.light .urine-guide .ul{color:#7a9a70;}
 body.light .stats-bar .stat-item{border-right-color:rgba(60,120,50,0.15);}
 body.light .cond-banner.hot-banner{background:rgba(208,48,48,0.06);}
 body.light .cond-banner.cool-banner{background:rgba(42,128,192,0.07);}
@@ -390,7 +386,10 @@ body.light .drum-item.selected{color:var(--orange);}
 .wt-display{
   font-family:'Nunito',sans-serif;font-size:22px;font-weight:900;
   color:var(--orange);min-width:44px;text-align:center;line-height:1;
+  background:none;border:none;outline:none;width:54px;padding:0;
+  -moz-appearance:textfield;cursor:text;
 }
+.wt-display::-webkit-inner-spin-button,.wt-display::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
 .wt-step{
   width:32px;height:32px;border-radius:10px;
   background:var(--bg3);border:1.5px solid var(--border2);
@@ -431,7 +430,7 @@ body.light .wt-step{background:#e4f0de;}
       <span class="ctrl-label">Weight</span>
       <div class="wt-row">
         <button class="wt-step" id="wtMinus" onclick="doStep(-1)">−</button>
-        <div class="wt-display" id="weightDisplay">70</div>
+        <input class="wt-display" id="weightDisplay" type="number" value="70" min="30" max="200" inputmode="numeric">
         <button class="wt-step" id="wtPlus" onclick="doStep(1)">+</button>
       </div>
       <div class="unit-toggle">
@@ -712,7 +711,7 @@ function setUnit(u){
 // ── WEIGHT CONTROL ─────────────────────────────────────────────────────────
 function updateWeightDisplay(){
   const v=Math.round(unit==='kg'?weightKg:weightKg*2.205);
-  document.getElementById('weightDisplay').textContent=v;
+  document.getElementById('weightDisplay').value=v;
 }
 function setWeightKg(newKg){
   weightKg=Math.max(30,Math.min(200,newKg));
@@ -738,6 +737,13 @@ function wtPressEnd(){
 }
 document.getElementById('wtMinus').addEventListener('pointerdown',()=>wtPressStart(-1));
 document.getElementById('wtPlus').addEventListener('pointerdown',()=>wtPressStart(1));
+document.getElementById('weightDisplay').addEventListener('input',function(){
+  const raw=parseFloat(this.value);
+  if(!isNaN(raw)&&raw>0){
+    const kg=unit==='kg'?raw:raw/2.205;
+    setWeightKg(kg);
+  }
+});
 ['pointerup','pointerleave','pointercancel'].forEach(ev=>{
   document.getElementById('wtMinus').addEventListener(ev,wtPressEnd);
   document.getElementById('wtPlus').addEventListener(ev,wtPressEnd);
@@ -758,15 +764,6 @@ function condNote(hot,rain,cool){
 function durNote(sprint,short,medium,long){
   const t={sprint,short,medium,long}[duration];
   return t?`<span class="dur-inline">${t}</span>`:'';
-}
-function urineGuide(){
-  return `<div class="urine-guide">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div class="us" style="background:#f0e050;"></div><div class="ul">Over</div></div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div class="us" style="background:#d4c030;border:2px solid var(--green);"></div><div class="ul" style="color:var(--green);">✓ OK</div></div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div class="us" style="background:#a88a10;"></div><div class="ul">Low</div></div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div class="us" style="background:#6b5000;"></div><div class="ul">Dehy.</div></div>
-    <div style="font-size:10px;color:var(--text3);margin-left:4px;line-height:1.3;">Aim for<br>pale straw</div>
-  </div>`;
 }
 
 // ── PRACTICE PAGE ──────────────────────────────────────────────────────────
@@ -791,7 +788,6 @@ function renderPractice(){
           <div class="pbv bl">${mlStr(totalMl)}</div>
           <div class="pbu">total for the day including riding</div>
           <div class="pbn"><strong>${mlStr(baseMl)}</strong> base (40ml/kg) + <strong>${mlStr(fmL(d.rideAddOn))}</strong> for your ride<br>On the bike: <strong>${onBikeFluid()}ml/hr</strong> with electrolytes${c.onBikeExtra}<br>Sodium: <strong>${c.elecSodium}mg per 500ml</strong></div>
-          ${urineGuide()}
         </div>
       </div>
       <div class="practice-card">
@@ -886,7 +882,7 @@ function getDays(){
         ['7:00 AM','meal','Oatmeal (2 cups) + honey + banana + raisins + 1 glass OJ. 300ml water.'],
         ['10:00 AM','snack','Apple + 2 rice cakes + almond butter. 300ml water.'],
         ['12:30 PM','meal',`Big lunch — pasta or rice + tuna or chicken. Cooked veg only. ${fStr(400)} water.`],
-        ['3:00 PM','water',`${fStr(350)} water. Check urine — pale straw.`],
+        ['3:00 PM','water',`${fStr(350)} water.`],
         ['3:30 PM','snack','Energy bar + banana. 250ml water.'],
         ['7:00 PM','meal',`White rice (2 cups) + chicken + cooked carrots. ${fStr(400)} water.`],
         ['9:00 PM','snack','Corn flakes + milk. 200ml water.'],
@@ -909,7 +905,7 @@ function getDays(){
         ['7:30 AM','meal','Oats + honey + banana OR white toast + eggs + jam. 300ml water or 1 coffee.'],
         ['10:00 AM','snack',`Banana + rice cake + honey. ${fStr(300)} water.`],
         ['12:30 PM','meal',`Big lunch — rice or pasta + chicken. Cooked veg. ${fStr(400)} water.`],
-        ['3:00 PM','snack',`Energy bar + banana. ${fStr(300)} water. Check urine.`],
+        ['3:00 PM','snack',`Energy bar + banana. ${fStr(300)} water.`],
         ['5:00 PM','water',`${fStr(500)} electrolyte drink — sodium retains fluid overnight. Critical.`+condNote(`Hot: ${fStr(600)} and add salt to dinner.`,'','')],
         ['6:30 PM','meal',`Moderate dinner by 7 PM: pasta or rice + chicken. Nothing heavy. ${fStr(400)} water.`],
         ['8:30 PM','snack','2 rice cakes + honey or cereal. Last food. 200ml water.'],
@@ -969,7 +965,7 @@ function renderWeek(){
   const rows=day.rows.map(([time,type,text])=>`<tr><td class="time-cell">${time}</td><td class="type-cell">${badgeHTML(type)}</td><td class="food-text">${text}</td></tr>`).join('');
   const carbCard=!isRD&&day.carbNote?`<div class="carb-target"><strong>${Math.round(day.carbNote[0]*w)}–${Math.round(day.carbNote[1]*w)}g</strong> carbs today · ${day.carbNote[0]}–${day.carbNote[1]}g/kg at ${Math.round(w)}kg</div>`:'';
   const hydCards=!isRD?`<div class="hydration-row">
-    <div class="hydration-card ${condition==='hot'?'hot-card':false?'rain-card':''}"><div class="hkey">Water target</div><div class="hval">${waterDisplay}</div>${urineGuide()}</div>
+    <div class="hydration-card ${condition==='hot'?'hot-card':''}"><div class="hkey">Water target</div><div class="hval">${waterDisplay}</div></div>
     <div class="hydration-card ${condition==='hot'?'hot-card':''}"><div class="hkey">Sodium /500ml</div><div class="hval">${c.elecSodium}mg</div><div style='font-size:10px;color:var(--text3);margin-top:3px;font-family:Nunito,sans-serif;'>ACSM: 300–600mg/hr total</div></div>
     <div class="hydration-card"><div class="hkey">Protein /meal</div><div class="hval">25–30g</div></div>
   </div>`:'';
@@ -998,7 +994,7 @@ function setKitSubTab(t){
 }
 
 function getKitSections(){
-  const d=dc(), isHot=condition==='hot', isCool=condition==='cool';
+  const d=dc(), isHot=condition==='hot', isCool=condition==='cool', isRain=false;
   const gels=d.gels, bottles=isHot?3:2;
   return [
     { title:'Nutrition & fuel', icon:'⚡', items:[
@@ -1052,6 +1048,7 @@ function getKitSections(){
 function getMaintSections(){
   const daysLeft=daysUntilRace();
   const urgent= daysLeft!==null && daysLeft<=3;
+  const isRain=false;
   return [
     { title:'Drivetrain', icon:'⚙️', items:[
       { name:'Lube the chain', detail:isRain?'Use wet lube — reapply if riding in rain before race':'Use dry lube for dry conditions — wipe excess off with a rag', when:'Night before', urgent:true },
