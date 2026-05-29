@@ -1047,12 +1047,12 @@
     <div class="login-card">
       <input class="input" type="email"    placeholder="School email" autocomplete="off">
       <input class="input" type="password" placeholder="Password"     autocomplete="off">
-      <button class="btn-primary" onclick="nav('home')">Log in</button>
+      <button class="btn-primary" onclick="document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});document.getElementById('page-home').style.display='flex';document.getElementById('bottom-nav').style.display='flex';document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});document.getElementById('nav-home').classList.add('active');">Log in</button>
     </div>
 
     <p class="login-footer">
       Don't have an account?&nbsp;
-      <button class="link-btn" onclick="nav('signup')">Sign up</button>
+      <button class="link-btn" onclick="document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});document.getElementById('page-signup').style.display='flex';document.getElementById('bottom-nav').style.display='none';">Sign up</button>
     </p>
 
   </div>
@@ -1101,13 +1101,13 @@
         </div>
       </div>
 
-      <button class="btn-primary" onclick="nav('home')">Create account</button>
+      <button class="btn-primary" onclick="document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});document.getElementById('page-home').style.display='flex';document.getElementById('bottom-nav').style.display='flex';document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});document.getElementById('nav-home').classList.add('active');">Create account</button>
 
     </div>
 
     <p class="login-footer">
       Already have an account?&nbsp;
-      <button class="link-btn" onclick="nav('login')">Log in</button>
+      <button class="link-btn" onclick="document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});document.getElementById('page-login').style.display='flex';document.getElementById('bottom-nav').style.display='none';">Log in</button>
     </p>
 
   </div>
@@ -1122,7 +1122,7 @@
   <div id="page-home" class="page" style="display:none;">
 
     <div class="top-bar">
-      <div class="logo-sm" onclick="nav('home')" style="cursor:pointer;"><span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span></div>
+      <div class="logo-sm" onclick="document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});document.getElementById('page-home').style.display='flex';document.getElementById('bottom-nav').style.display='flex';document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});document.getElementById('nav-home').classList.add('active');" style="cursor:pointer;"><span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span></div>
       <div class="avatar">JL</div>
     </div>
 
@@ -1189,7 +1189,7 @@
           <div class="sg-name">AP Calc Review</div>
           <div class="sg-meta">3 members &middot; Saturday 2:00 PM</div>
         </div>
-        <button class="btn-view" onclick="nav('study')">View</button>
+        <button class="btn-view" onclick="document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});document.getElementById('page-study').style.display='flex';document.getElementById('bottom-nav').style.display='flex';document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});document.getElementById('nav-study').classList.add('active');">View</button>
       </div>
 
       <div class="sg-card" style="margin-bottom:28px;">
@@ -1197,7 +1197,7 @@
           <div class="sg-name">Chemistry Lab Prep</div>
           <div class="sg-meta">2 members &middot; Sunday 4:00 PM</div>
         </div>
-        <button class="btn-view" onclick="nav('study')">View</button>
+        <button class="btn-view" onclick="document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});document.getElementById('page-study').style.display='flex';document.getElementById('bottom-nav').style.display='flex';document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});document.getElementById('nav-study').classList.add('active');">View</button>
       </div>
 
     </div><!-- /.page-body -->
@@ -1219,7 +1219,7 @@
   ══════════════════════════════ -->
   <div id="page-schedule" class="page" style="display:none;">
     <div class="top-bar">
-      <div class="logo-sm" onclick="nav('home')" style="cursor:pointer;"><span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span></div>
+      <div class="logo-sm" onclick="document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});document.getElementById('page-home').style.display='flex';document.getElementById('bottom-nav').style.display='flex';document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});document.getElementById('nav-home').classList.add('active');" style="cursor:pointer;"><span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span></div>
       <div class="avatar">JL</div>
     </div>
 
@@ -1318,7 +1318,7 @@
   ══════════════════════════════ -->
   <div id="page-study" class="page" style="display:none;">
     <div class="top-bar">
-      <div class="logo-sm" onclick="nav('home')" style="cursor:pointer;"><span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span></div>
+      <div class="logo-sm" onclick="document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});document.getElementById('page-home').style.display='flex';document.getElementById('bottom-nav').style.display='flex';document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});document.getElementById('nav-home').classList.add('active');" style="cursor:pointer;"><span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span></div>
       <div class="avatar">JL</div>
     </div>
 
@@ -1428,7 +1428,7 @@
   ══════════════════════════════ -->
   <div id="page-tutors" class="page" style="display:none;">
     <div class="top-bar">
-      <div class="logo-sm" onclick="nav('home')" style="cursor:pointer;"><span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span></div>
+      <div class="logo-sm" onclick="document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});document.getElementById('page-home').style.display='flex';document.getElementById('bottom-nav').style.display='flex';document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});document.getElementById('nav-home').classList.add('active');" style="cursor:pointer;"><span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span></div>
       <div class="avatar">JL</div>
     </div>
 
@@ -1509,7 +1509,7 @@
   ══════════════════════════════ -->
   <div id="page-events" class="page" style="display:none;">
     <div class="top-bar">
-      <div class="logo-sm" onclick="nav('home')" style="cursor:pointer;"><span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span></div>
+      <div class="logo-sm" onclick="document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});document.getElementById('page-home').style.display='flex';document.getElementById('bottom-nav').style.display='flex';document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});document.getElementById('nav-home').classList.add('active');" style="cursor:pointer;"><span class="t-navy">Studdy</span>&nbsp;<span class="t-blue">Buddy</span></div>
       <div class="avatar">JL</div>
     </div>
     <div class="page-body">
@@ -1585,27 +1585,27 @@
   ══════════════════════════════ -->
   <nav id="bottom-nav" style="display:none;">
 
-    <button class="nav-item" id="nav-home" onclick="nav('home')">
+    <button class="nav-item" id="nav-home" onclick="document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});document.getElementById('page-home').style.display='flex';document.getElementById('bottom-nav').style.display='flex';document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});document.getElementById('nav-home').classList.add('active');">
       <svg id="ico-home" viewBox="0 0 24 24" fill="#7AABCC"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
       <span class="lbl">Home</span>
     </button>
 
-    <button class="nav-item" id="nav-schedule" onclick="nav('schedule')">
+    <button class="nav-item" id="nav-schedule" onclick="document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});document.getElementById('page-schedule').style.display='flex';document.getElementById('bottom-nav').style.display='flex';document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});document.getElementById('nav-schedule').classList.add('active');">
       <svg id="ico-schedule" viewBox="0 0 24 24" fill="#7AABCC"><path d="M19 3h-1V1h-2v2H8V1H6v2H5C3.89 3 3 3.9 3 5v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
       <span class="lbl">Schedule</span>
     </button>
 
-    <button class="nav-item" id="nav-study" onclick="nav('study')">
+    <button class="nav-item" id="nav-study" onclick="document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});document.getElementById('page-study').style.display='flex';document.getElementById('bottom-nav').style.display='flex';document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});document.getElementById('nav-study').classList.add('active');">
       <svg id="ico-study" viewBox="0 0 24 24" fill="#7AABCC"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
       <span class="lbl">Study</span>
     </button>
 
-    <button class="nav-item" id="nav-tutors" onclick="nav('tutors')">
+    <button class="nav-item" id="nav-tutors" onclick="document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});document.getElementById('page-tutors').style.display='flex';document.getElementById('bottom-nav').style.display='flex';document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});document.getElementById('nav-tutors').classList.add('active');">
       <svg id="ico-tutors" viewBox="0 0 24 24" fill="#7AABCC"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
       <span class="lbl">Tutors</span>
     </button>
 
-    <button class="nav-item" id="nav-events" onclick="nav('events')">
+    <button class="nav-item" id="nav-events" onclick="document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});document.getElementById('page-events').style.display='flex';document.getElementById('bottom-nav').style.display='flex';document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});document.getElementById('nav-events').classList.add('active');">
       <svg id="ico-events" viewBox="0 0 24 24" fill="#7AABCC"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
       <span class="lbl">Events</span>
     </button>
@@ -1622,7 +1622,7 @@
   var SCHED_ADS = {
     MATH:      { name: 'Casio FX-991EX Calculator', price: '$18.99 at Walmart'         },
     SCIENCE:   { name: 'Lab Notebook 100pg',         price: '$9.99 at Staples'          },
-    ARTS:      { name: "D’Addario Rosin",       price: ‘$7.99 at Guitar Center’    },
+    ARTS:      { name: "D'Addario Rosin",       price: '$7.99 at Guitar Center'    },
     HISTORY:   { name: 'Oxford Pocket Dictionary',   price: '$8.99 at Barnes & Noble'   },
     ENGLISH:   { name: 'Oxford Pocket Dictionary',   price: '$8.99 at Barnes & Noble'   },
     LANGUAGES: { name: 'Mead Composition Book',      price: '$4.99 at Target'           }
@@ -2117,13 +2117,6 @@
     if (pr) pr.textContent = ad.price;
   }
 
-  var MAIN = ['home', 'schedule', 'study', 'tutors', 'events'];
-
-  /* goTo() — delegates to nav() defined in the <head> script.
-     Used internally by closeTutorChat() and the boot call. */
-  function goTo(page) {
-    nav(page);
-  }
 
   // Grade dropdown: switch from placeholder color to navy on selection
   document.getElementById('grade-select').addEventListener('change', function() {
